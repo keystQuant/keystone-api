@@ -1,0 +1,47 @@
+version: "3"
+
+services:
+  nginx:
+    build: ./config/nginx
+    container_name: keystone-api-nginx
+    depends_on:
+      - web
+    links:
+      - web:web
+    networks:
+      - keystone
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+
+  web:
+    build: .
+    container_name: keystone-api-django
+    depends_on:
+      - redis
+    environment:
+      - DOCKER_CONTAINER=True
+    links:
+      - redis:redis
+    networks:
+      - keystone
+    restart: unless-stopped
+
+  redis:
+    container_name: keystone-api-redis
+    command: redis-server --requirepass keystoneapiredispassword --appendonly yes
+    image: redis
+    networks:
+      - keystone
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+    volumes:
+      - keystone_cache_data:/data
+
+networks:
+  keystone:
+    driver: bridge
+
+volumes:
+  keystone_cache_data:
