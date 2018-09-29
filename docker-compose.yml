@@ -19,8 +19,6 @@ services:
     container_name: keystone-api-django
     depends_on:
       - redis
-    environment:
-      - DOCKER_CONTAINER=True
     links:
       - redis:redis
     networks:

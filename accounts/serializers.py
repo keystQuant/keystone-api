@@ -2,13 +2,13 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
-from accounts.models import Profile
+from .models import Profile
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-    profile = serializers.HyperlinkedRelatedField(view_name='accounts:profile-details', read_only=True)
+    profile = serializers.HyperlinkedRelatedField(view_name='profile-details', read_only=True)
 
     class Meta:
         model = User

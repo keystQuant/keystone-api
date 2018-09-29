@@ -1,10 +1,15 @@
 import os
+import raven
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = 'bfrb1tzc963g=dxdn10gvv66c7#02-j=fvd)*h*roo#^7jg^q!'
 
 DEBUG = True
+
+##### 새팅 상태 위에서 먼저 정의 #####
+testing = os.environ.get('TRAVIS', 'False') # Travis에서 작동하는지 확인
+###############################
 
 ALLOWED_HOSTS = ['127.0.0.1', '127.0.1.1']
 
@@ -16,12 +21,28 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # corsheaders
+    'corsheaders',
+
+    # Sentry: 에러 로깅
+    'raven.contrib.django.raven_compat',
+
+    # Django Restframework (API Template)
+    'rest_framework',
+
     'accounts',
-    'portfolio',
+    # 'portfolio',
     'stocks',
 ]
 
+### Sentry 새팅 ###
+RAVEN_CONFIG = {
+    'dsn': 'https://80460928d93740f5b85607eff1e4cab0:d18a1597d4b44952809b1e96ea162c86@sentry.io/1273289',
+    'release': raven.fetch_git_sha(BASE_DIR),
+}
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # corsheaders를 사용하려면 포함하기
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,20 +72,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'keystone.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if testing == 'True':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'keystone',
+            'USER': 'keystone',
+            'PASSWORD': 'keystoneinvestmentpostgresql2018',
+            'HOST': '45.77.134.175',
+            'PORT': 5432,
+            'TEST': {
+                'NAME': 'test_keystone', # run "ALTER ROLE arbiter CREATEDB;" in psql
+            },
+        }
+    }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
+### 서버 Redis 사용 ###
+if testing == 'True':
+    ### 실제 서비스 중에만 캐시 서버 사용 ###
+    print('NO CACHE')
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://:keystoneapiredispassword@cache:6379/1", # 1번 DB
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -81,22 +124,26 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/2.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
-
 USE_L10N = True
+USE_TZ = False
 
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-
+### API 서버라 static은 필요없지만, rest framework에서 디버깅 용으로 사용이 필요하기 때문에 추가 ###
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+# https://github.com/ottoyiu/django-cors-headers
+CORS_ORIGIN_ALLOW_ALL = True # 외부에서 API 요청 가능하도록 새팅
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
