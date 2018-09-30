@@ -10,7 +10,7 @@ class Date(models.Model):
 
 class Ticker(models.Model):
     date = models.CharField(max_length=10)
-    code = models.CharField(max_length=20, primary_key=True)
+    code = models.CharField(max_length=20)
     name = models.CharField(max_length=50)
     market_type = models.CharField(max_length=10)
     state = models.BooleanField(default=True) # 거래되고 있는 종목이면 1, 아니면 0

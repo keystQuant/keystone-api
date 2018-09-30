@@ -1,4 +1,5 @@
 import datetime
+import pandas as pd
 
 from .models import (
     Date,
@@ -12,6 +13,10 @@ from .models import (
 )
 
 from utils.cache import RedisClient
+
+from keystone.settings import RAVEN_CONFIG
+from raven import Client
+client = Client(RAVEN_CONFIG['dsn'])
 
 class Reducers:
 
@@ -64,6 +69,33 @@ class Reducers:
         if len(dates) != 0:
             print('데이터 첫번째: {}, 마지막: {}'.format(dates[0], dates[-1]))
 
+    def set_update_tasks(self):
+        all_dates = self.redis.get_list('mass_date') # 리스트값이다
+
+        # 업데이트한 새로운 날짜 데이터를 데이터베이스의 데이터들과 비교하여, 추가해야할 날짜가 언제인지 캐시에 저장해두기
+        # 확인해야할 모델들: Ticker, Index, ETF, OHLCV, BuySell, MarketCapital, Factor
+
+        ### Ticker 모델 최근 날짜 업데이트 됐는지 확인 ###
+        print('Ticker 모델 데이터베이스 상태 확인')
+        ticker_qs = Ticker.objects.distinct('date').values('date')
+        ticker_dates = list(pd.DataFrame(list(ticker_qs))['date'])
+        print(ticker_dates)
+        # ticker_dates = list(set([ticker.date for ticker in ticker_qs]))
+
+        if all_dates[-1] != ticker_dates[0]:
+            # all_dates의 -1 인덱스가 최근 날짜이고,
+            # ticker_dates에는 딱 하나의 날짜가 존재해야 한다
+            self.redis.set_key('UPDATE_TICKER', 'False')
+        else:
+            self.redis.set_key('UPDATE_TICKER', 'True')
+
+        ### Index 모델 최근 날짜 업데이트 됐는지 확인 ###
+        print('Index 모델 데이터베이스 상태 확인')
+        index_qs = Index.objects.distinct('date').values('date')
+        index_dates = list(pd.DataFrame(list(index_qs))['date'])
+        print(index_dates)
+
+
     def save_kospi_tickers(self):
         all_tickers = self.redis.get_list('kospi_tickers') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
@@ -79,6 +111,8 @@ class Reducers:
         # 날짜만 업데이트하면 되는 종목들
         update_date_tickers = list(set(tickers_in_db) - set(stopped_tickers))
 
+        today_date = datetime.datetime.now().strftime('%Y%m%d')
+
         stopped_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in stopped_tickers]).delete()
         bulk_tickers_list = []
         for ticker_info in stopped_tickers:
@@ -92,8 +126,6 @@ class Reducers:
             bulk_tickers_list.append(ticker_inst)
         print('거래정지 종목 업데이트: {}개'.format(len(stopped_tickers)))
 
-        today_date = datetime.datetime.now().strftime('%Y%M%d')
-
         for ticker_info in to_save_tickers:
             ticker = ticker_info.split('|')[0]
             name = ticker_info.split('|')[1]
@@ -106,7 +138,7 @@ class Reducers:
         print('새로 종목 업데이트: {}개'.format(len(to_save_tickers)))
 
         update_date_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in update_date_tickers]).delete()
-        for ticker_inst in update_date_tickers:
+        for ticker_info in update_date_tickers:
             ticker = ticker_info.split('|')[0]
             name = ticker_info.split('|')[1]
             ticker_inst = Ticker(date=today_date,
@@ -123,7 +155,7 @@ class Reducers:
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
         tickers_qs = Ticker.objects.filter(market_type='KOSDAQ')
-        tickers_in_db = [ticker.code for ticker in tickers_qs]
+        tickers_in_db = ['{}|{}'.format(ticker.code, ticker.name) for ticker in tickers_qs]
         print('DB 데이터: {}'.format(len(tickers_in_db)))
 
         # 거래 중지 종목: 데이터 state 0으로 업데이트하기
@@ -133,28 +165,44 @@ class Reducers:
         # 날짜만 업데이트하면 되는 종목들
         update_date_tickers = list(set(tickers_in_db) - set(stopped_tickers))
 
-        stopped_tickers_qs = Ticker.objects.filter(code__in=stopped_tickers)
-        for ticker_inst in stopped_tickers_qs:
-            ticker_inst.state = 0
-            ticker_inst.save()
-        print('거래정지 종목 업데이트: {}개'.format(len(stopped_tickers)))
+        today_date = datetime.datetime.now().strftime('%Y%m%d')
 
-        today_date = datetime.datetime.now().strftime('%Y%M%d')
-
-        for ticker in to_save_tickers:
+        stopped_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in stopped_tickers]).delete()
+        bulk_tickers_list = []
+        for ticker_info in stopped_tickers:
+            ticker = ticker_info.split('|')[0]
+            name = ticker_info.split('|')[1]
             ticker_inst = Ticker(date=today_date,
                                  code=ticker,
-                                 name='',
+                                 name=name,
+                                 market_type='KOSDAQ',
+                                 state=0)
+            bulk_tickers_list.append(ticker_inst)
+        print('거래정지 종목 업데이트: {}개'.format(len(stopped_tickers)))
+
+        for ticker_info in to_save_tickers:
+            ticker = ticker_info.split('|')[0]
+            name = ticker_info.split('|')[1]
+            ticker_inst = Ticker(date=today_date,
+                                 code=ticker,
+                                 name=name,
                                  market_type='KOSDAQ',
                                  state=1)
-            ticker_inst.save()
-        print('새로 종목 업데이트: {}개'.format(len(stopped_tickers)))
+            bulk_tickers_list.append(ticker_inst)
+        print('새로 종목 업데이트: {}개'.format(len(to_save_tickers)))
 
-        update_date_tickers_qs = Ticker.objects.filter(code__in=update_date_tickers)
-        for ticker_inst in update_date_tickers_qs:
-            ticker_inst.date = today_date
-            ticker_inst.save()
+        update_date_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in update_date_tickers]).delete()
+        for ticker_info in update_date_tickers:
+            ticker = ticker_info.split('|')[0]
+            name = ticker_info.split('|')[1]
+            ticker_inst = Ticker(date=today_date,
+                                 code=ticker,
+                                 name=name,
+                                 market_type='KOSDAQ',
+                                 state=1)
+            bulk_tickers_list.append(ticker_inst)
         print('종목 날짜 업데이트: {}개'.format(len(update_date_tickers)))
+        Ticker.objects.bulk_create(bulk_tickers_list)
 
     # def get_dates_in_db(self, task_name):
     #     # 크롤링 마무리하여 데이터베이스에 저장된 날짜들을 리턴한다
