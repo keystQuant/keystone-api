@@ -123,120 +123,40 @@ class Reducers:
         all_tickers = self.redis.get_list('kospi_tickers') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
-        tickers_qs = Ticker.objects.filter(market_type='KOSPI')
-        tickers_in_db = ['{}|{}'.format(ticker.code, ticker.name) for ticker in tickers_qs]
-        print('DB 데이터: {}'.format(len(tickers_in_db)))
-
-        # 거래 중지 종목: 데이터 state 0으로 업데이트하기
-        stopped_tickers = list(set(tickers_in_db) - set(all_tickers))
-        # 새로 저장해야할 종목들
-        to_save_tickers = list(set(all_tickers) - set(tickers_in_db))
-        # 날짜만 업데이트하면 되는 종목들
-        update_date_tickers = list(set(tickers_in_db) - set(stopped_tickers))
-
         today_date = datetime.datetime.now().strftime('%Y%m%d')
-
-        stopped_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in stopped_tickers]).delete()
-        bulk_tickers_list = []
-        for ticker_info in stopped_tickers:
-            ticker = ticker_info.split('|')[0]
-            name = ticker_info.split('|')[1]
-            ticker_inst = Ticker(date=today_date,
-                                 code=ticker,
-                                 name=name,
-                                 market_type='KOSPI',
-                                 state=0)
-            bulk_tickers_list.append(ticker_inst)
-        print('거래정지 종목 업데이트: {}개'.format(len(stopped_tickers)))
-
-        for ticker_info in to_save_tickers:
-            ticker = ticker_info.split('|')[0]
-            name = ticker_info.split('|')[1]
-            ticker_inst = Ticker(date=today_date,
-                                 code=ticker,
-                                 name=name,
-                                 market_type='KOSPI',
-                                 state=1)
-            bulk_tickers_list.append(ticker_inst)
-        print('새로 종목 업데이트: {}개'.format(len(to_save_tickers)))
-
-        update_date_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in update_date_tickers]).delete()
-        for ticker_info in update_date_tickers:
-            ticker = ticker_info.split('|')[0]
-            name = ticker_info.split('|')[1]
-            ticker_inst = Ticker(date=today_date,
-                                 code=ticker,
-                                 name=name,
-                                 market_type='KOSPI',
-                                 state=1)
-            bulk_tickers_list.append(ticker_inst)
-        print('종목 날짜 업데이트: {}개'.format(len(update_date_tickers)))
-        Ticker.objects.bulk_create(bulk_tickers_list)
+        to_update_ticker_date = self.redis.get_key('to_update_ticker_list')[0]
+        if today_date == to_update_ticker_date:
+            bulk_tickers_list = []
+            for ticker_info in all_tickers:
+                ticker = ticker_info.split('|')[0]
+                name = ticker_info.split('|')[1]
+                ticker_inst = Ticker(date=today_date,
+                                     code=ticker,
+                                     name=name,
+                                     market_type='KOSPI',
+                                     state=1)
+                bulk_tickers_list.append(ticker_inst)
+            print('코드 업데이트: {}개'.format(len(all_tickers)))
+        else:
+            print('코드 업데이트: 0개')
 
     def save_kosdaq_tickers(self):
         all_tickers = self.redis.get_list('kosdaq_tickers') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
-        tickers_qs = Ticker.objects.filter(market_type='KOSDAQ')
-        tickers_in_db = ['{}|{}'.format(ticker.code, ticker.name) for ticker in tickers_qs]
-        print('DB 데이터: {}'.format(len(tickers_in_db)))
-
-        # 거래 중지 종목: 데이터 state 0으로 업데이트하기
-        stopped_tickers = list(set(tickers_in_db) - set(all_tickers))
-        # 새로 저장해야할 종목들
-        to_save_tickers = list(set(all_tickers) - set(tickers_in_db))
-        # 날짜만 업데이트하면 되는 종목들
-        update_date_tickers = list(set(tickers_in_db) - set(stopped_tickers))
-
         today_date = datetime.datetime.now().strftime('%Y%m%d')
-
-        stopped_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in stopped_tickers]).delete()
-        bulk_tickers_list = []
-        for ticker_info in stopped_tickers:
-            ticker = ticker_info.split('|')[0]
-            name = ticker_info.split('|')[1]
-            ticker_inst = Ticker(date=today_date,
-                                 code=ticker,
-                                 name=name,
-                                 market_type='KOSDAQ',
-                                 state=0)
-            bulk_tickers_list.append(ticker_inst)
-        print('거래정지 종목 업데이트: {}개'.format(len(stopped_tickers)))
-
-        for ticker_info in to_save_tickers:
-            ticker = ticker_info.split('|')[0]
-            name = ticker_info.split('|')[1]
-            ticker_inst = Ticker(date=today_date,
-                                 code=ticker,
-                                 name=name,
-                                 market_type='KOSDAQ',
-                                 state=1)
-            bulk_tickers_list.append(ticker_inst)
-        print('새로 종목 업데이트: {}개'.format(len(to_save_tickers)))
-
-        update_date_tickers_qs = Ticker.objects.filter(code__in=[ticker[0] for ticker in update_date_tickers]).delete()
-        for ticker_info in update_date_tickers:
-            ticker = ticker_info.split('|')[0]
-            name = ticker_info.split('|')[1]
-            ticker_inst = Ticker(date=today_date,
-                                 code=ticker,
-                                 name=name,
-                                 market_type='KOSDAQ',
-                                 state=1)
-            bulk_tickers_list.append(ticker_inst)
-        print('종목 날짜 업데이트: {}개'.format(len(update_date_tickers)))
-        Ticker.objects.bulk_create(bulk_tickers_list)
-
-    # def get_dates_in_db(self, task_name):
-    #     # 크롤링 마무리하여 데이터베이스에 저장된 날짜들을 리턴한다
-    #     if 'INDEX' in task_name:
-    #         qs = Index.objects.all()
-    #     elif 'OHLCV' in task_name:
-    #         qs = OHLCV.objects.all()
-    #     elif 'BUYSELL' in task_name:
-    #         qs = BuySell.objects.all()
-    #     elif 'FACTOR' in task_name:
-    #         qs = Factor.objects.all()
-    #     dates_in_db = list(qs.distinct('date').values_list('date'))
-    #     dates_in_db = [date[0] for date in dates_in_db]
-    #     return dates_in_db
+        to_update_ticker_date = self.redis.get_key('to_update_ticker_list')[0]
+        if today_date == to_update_ticker_date:
+            bulk_tickers_list = []
+            for ticker_info in all_tickers:
+                ticker = ticker_info.split('|')[0]
+                name = ticker_info.split('|')[1]
+                ticker_inst = Ticker(date=today_date,
+                                     code=ticker,
+                                     name=name,
+                                     market_type='KOSDAQ',
+                                     state=1)
+                bulk_tickers_list.append(ticker_inst)
+            print('코드 업데이트: {}개'.format(len(all_tickers)))
+        else:
+            print('코드 업데이트: 0개')
