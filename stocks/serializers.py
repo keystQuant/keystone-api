@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import (
     Date,
     Ticker,
+    StockInfo,
     Index,
     ETF,
     OHLCV,
@@ -21,6 +22,12 @@ class DateSerializer(serializers.ModelSerializer):
 class TickerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticker
+        fields = '__all__'
+
+
+class StockInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockInfo
         fields = '__all__'
 
 

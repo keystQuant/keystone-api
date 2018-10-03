@@ -4,6 +4,7 @@ import pandas as pd
 from .models import (
     Date,
     Ticker,
+    StockInfo,
     Index,
     ETF,
     OHLCV,
@@ -54,7 +55,7 @@ class Reducers:
         all_dates = self.redis.get_list('mass_date') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_dates)))
 
-        dates_qs = Date.objects.all().distinct('date').values_list('date')
+        dates_qs = Date.objects.all().order_by('date').distinct('date').values_list('date')
         dates_in_db = [date[0] for date in dates_qs]
         print('DB 데이터({}개): {} ~ {}'.format(len(dates_in_db), dates_in_db[0], dates_in_db[-1]))
 
@@ -70,31 +71,53 @@ class Reducers:
             print('데이터 첫번째: {}, 마지막: {}'.format(dates[0], dates[-1]))
 
     def set_update_tasks(self):
+        today_date = datetime.datetime.now().strftime('%Y-%m-%d')
         all_dates = self.redis.get_list('mass_date') # 리스트값이다
 
         # 업데이트한 새로운 날짜 데이터를 데이터베이스의 데이터들과 비교하여, 추가해야할 날짜가 언제인지 캐시에 저장해두기
-        # 확인해야할 모델들: Ticker, Index, ETF, OHLCV, BuySell, MarketCapital, Factor
+        # 확인해야할 모델들: Ticker, StockInfo, Index, ETF, OHLCV, MarketCapital, BuySell, Factor
 
-        ### Ticker 모델 최근 날짜 업데이트 됐는지 확인 ###
-        print('Ticker 모델 데이터베이스 상태 확인')
-        ticker_qs = Ticker.objects.distinct('date').values('date')
-        ticker_dates = list(pd.DataFrame(list(ticker_qs))['date'])
-        print(ticker_dates)
-        # ticker_dates = list(set([ticker.date for ticker in ticker_qs]))
+        for model in ['Ticker', 'StockInfo', 'Index', 'ETF', 'OHLCV', 'MarketCapital', 'BuySell', 'Factor']:
+            if model == 'Ticker':
+                db_model = Ticker
+            elif model == 'StockInfo':
+                db_model = StockInfo
+            elif model == 'Index':
+                db_model = Index
+            elif model == 'ETF':
+                db_model = ETF
+            elif model == 'OHLCV':
+                db_model = OHLCV
+            elif model == 'MarketCapital':
+                db_model = MarketCapital
+            elif model == 'BuySell':
+                db_model = BuySell
 
-        if all_dates[-1] != ticker_dates[0]:
-            # all_dates의 -1 인덱스가 최근 날짜이고,
-            # ticker_dates에는 딱 하나의 날짜가 존재해야 한다
-            self.redis.set_key('UPDATE_TICKER', 'False')
-        else:
-            self.redis.set_key('UPDATE_TICKER', 'True')
+            print('{} 모델 데이터베이스 상태 확인'.format(model))
+            model_qs = db_model.objects.order_by('date').distinct('date').values('date')
+            dates = pd.DataFrame(list(model_qs))
 
-        ### Index 모델 최근 날짜 업데이트 됐는지 확인 ###
-        print('Index 모델 데이터베이스 상태 확인')
-        index_qs = Index.objects.distinct('date').values('date')
-        index_dates = list(pd.DataFrame(list(index_qs))['date'])
-        print(index_dates)
+            if len(dates) == 0:
+                dates = all_dates
+            else:
+                dates = list(dates['date'])
+                dates = list(set(all_dates) - set(dates))
 
+            dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
+
+            if all_dates[-1] != dates[-1]:
+                # all_dates의 -1 인덱스가 최근 날짜이다
+                self.redis.set_key('UPDATE_{}'.format(model), 'True')
+            else:
+                self.redis.set_key('UPDATE_{}'.format(model), 'False')
+
+            if model == 'Ticker' or model == 'StockInfo':
+                redis_data = ['to_update_{}_list'.format(model.lower())] + [dates[-1]]
+            else:
+                redis_data = ['to_update_{}_list'.format(model.lower())] + dates
+
+            res = self.redis.set_list(redis_data)
+            print(res)
 
     def save_kospi_tickers(self):
         all_tickers = self.redis.get_list('kospi_tickers') # 리스트값이다

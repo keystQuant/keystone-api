@@ -7,6 +7,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import (
     Date,
     Ticker,
+    StockInfo,
     Index,
     ETF,
     OHLCV,
@@ -17,6 +18,7 @@ from .models import (
 from .serializers import (
     DateSerializer,
     TickerSerializer,
+    StockInfoSerializer,
     IndexSerializer,
     ETFSerializer,
     OHLCVSerializer,
@@ -69,6 +71,31 @@ class TickerAPIView(generics.ListAPIView):
         name_by = self.request.GET.get('name')
         if date_by:
             queryset = queryset.filter(date=date_by)
+        if code_by:
+            queryset = queryset.filter(code=code_by)
+        if name_by:
+            queryset = queryset.filter(name=name_by)
+        return queryset
+
+
+class StockInfoAPIView(generics.ListAPIView):
+    queryset = StockInfo.objects.all()
+    serializer_class = IndexSerializer
+    permission_classes = (permissions.AllowAny,)
+    pagination_class = StandardResultPagination
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = StockInfo.objects.all().order_by('id')
+        date_by = self.request.GET.get('date')
+        start = self.request.GET.get('start')
+        end = self.request.GET.get('end')
+        code_by = self.request.GET.get('code')
+        name_by = self.request.GET.get('name')
+        if date_by:
+            queryset = queryset.filter(date=date_by)
+        if start and end and not date_by:
+            queryset = queryset.filter(date__gte=start).filter(date__lte=end)
         if code_by:
             queryset = queryset.filter(code=code_by)
         if name_by:
