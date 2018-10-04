@@ -11,7 +11,7 @@ DEBUG = True
 testing = os.environ.get('TRAVIS', 'False') # Travis에서 작동하는지 확인
 ###############################
 
-# keyst-db-server: 45.76.218.34
+# keyst-api-server: 45.76.202.71
 ALLOWED_HOSTS = ['127.0.0.1', '127.0.1.1', '45.76.202.71']
 
 INSTALLED_APPS = [
@@ -87,7 +87,7 @@ else:
             'NAME': 'keystone',
             'USER': 'keystone',
             'PASSWORD': 'keystoneinvestmentpostgresql2018',
-            'HOST': '45.76.218.34',
+            'HOST': '45.77.134.175',
             'PORT': 5432,
             'TEST': {
                 'NAME': 'test_keystone', # run "ALTER ROLE arbiter CREATEDB;" in psql
