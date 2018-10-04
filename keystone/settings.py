@@ -87,7 +87,7 @@ else:
             'NAME': 'keystone',
             'USER': 'keystone',
             'PASSWORD': 'keystoneinvestmentpostgresql2018',
-            'HOST': '45.77.134.175',
+            'HOST': '45.76.50.75', # keyst-db-server IP
             'PORT': 5432,
             'TEST': {
                 'NAME': 'test_keystone', # run "ALTER ROLE arbiter CREATEDB;" in psql
