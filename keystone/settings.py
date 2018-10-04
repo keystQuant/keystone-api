@@ -92,6 +92,9 @@ else:
             'TEST': {
                 'NAME': 'test_keystone', # run "ALTER ROLE arbiter CREATEDB;" in psql
             },
+            'OPTIONS': {
+                'sslmode': 'require'
+            },
         }
     }
 
