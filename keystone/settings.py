@@ -87,7 +87,7 @@ else:
             'NAME': 'keystone',
             'USER': 'keystone',
             'PASSWORD': 'keystoneinvestmentpostgresql2018',
-            'HOST': '45.77.134.175',
+            'HOST': '45.76.218.34',
             'PORT': 5432,
             'TEST': {
                 'NAME': 'test_keystone', # run "ALTER ROLE arbiter CREATEDB;" in psql
@@ -103,7 +103,7 @@ else:
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://:keystoneapiredispassword@cache:6379/1", # 1번 DB
+            "LOCATION": "redis://:keystoneapiredispassword@redis:6379/1", # 1번 DB
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             }
