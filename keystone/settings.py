@@ -83,7 +83,7 @@ if testing == 'True':
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'keystone',
             'USER': 'keystone',
             'PASSWORD': 'keystoneinvestmentpostgresql2018',
