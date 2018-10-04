@@ -98,6 +98,8 @@ else:
         }
     }
 
+    del DATABASES['default']['OPTIONS']['sslmode']
+
 ### 서버 Redis 사용 ###
 if testing == 'True':
     ### 실제 서비스 중에만 캐시 서버 사용 ###
