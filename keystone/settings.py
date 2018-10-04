@@ -12,7 +12,7 @@ testing = os.environ.get('TRAVIS', 'False') # Travis에서 작동하는지 확�
 ###############################
 
 # keyst-db-server: 45.76.218.34
-ALLOWED_HOSTS = ['127.0.0.1', '127.0.1.1', '45.76.218.34']
+ALLOWED_HOSTS = ['127.0.0.1', '127.0.1.1', '45.76.202.71']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
