@@ -50,18 +50,12 @@ class GatewayView(View):
             return JsonResponse({'status': 'NO ACTION: {}'.format(action_type)}, json_dumps_params={'ensure_ascii': True})
 
 
-class TestDateAPIView(View):
-    def get(self, request):
-        queryset = Date.objects.all().order_by('-date')
-        print(queryset)
-        return JsonResponse({'status': 'DONE'}, json_dumps_params={'ensure_ascii': True})
-
-
 class DateAPIView(generics.ListAPIView):
     queryset = Date.objects.all().order_by('-date')
     serializer_class = DateSerializer
     permission_classes = (permissions.AllowAny,)
     pagination_class = StandardResultPagination
+    filter_backends = [SearchFilter, OrderingFilter]
 
 
 class TickerAPIView(generics.ListAPIView):

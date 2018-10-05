@@ -6,7 +6,7 @@ class RedisClient:
 
     def __init__(self):
         print('Connecting to cache server (Redis) on Gobble server')
-        ip = '198.13.60.78'
+        ip = '198.13.60.19'
         pw = 'da56038fa453c22d2c46e83179126e97d4d272d02ece83eb83a97357e842d065'
         self.redis_client = redis.Redis(host=ip,
                                         port=6379,

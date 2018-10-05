@@ -29,9 +29,9 @@ class BackupDB:
         print('현재 working directory: {} 입니다'.format(pwd))
 
     def backup(self):
-        # self._backup_buysell()
-        # self._backup_factor()
-        # self._backup_index()
+        self._backup_buysell()
+        self._backup_factor()
+        self._backup_index()
         self._backup_ohlcv()
 
     def _backup_buysell(self):
@@ -189,9 +189,9 @@ class BackupDB:
         df = pd.read_csv('./backup/ohlcv.csv', low_memory=False, header=None)
         total_data_num = len(df)
         for i in range(total_data_num):
-            if i < 1590000:
-                to_save_data_list = []
-                continue
+            # if i < 1590000:
+            #     to_save_data_list = []
+            #     continue
             if i == 0:
                 to_save_data_list = []
             if i % 10000 == 0:

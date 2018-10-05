@@ -70,7 +70,10 @@ class Reducers:
         print('Date 데이터 저장: {}개'.format(len(dates)))
         if len(dates) != 0:
             print('데이터 첫번째: {}, 마지막: {}'.format(dates[0], dates[-1]))
+        ### 태스크 분배 시스템이 날짜가 업데이트됐음을 알 수 있게, 레디스에 그 정보를 저장한다
+        self.redis.set_key('DATE_JUST_UPDATED_TO_DB', 'True')
 
+    # 날짜 데이터가 있어야하기 때문에 SAVE_MASS_DATE 태스크를 먼저 실행시킨 후에 실행시킨다
     def set_update_tasks(self):
         today_date = datetime.datetime.now().strftime('%Y-%m-%d')
         all_dates = self.redis.get_list('mass_date') # 리스트값이다
@@ -108,9 +111,9 @@ class Reducers:
 
             if all_dates[-1] != dates[-1]:
                 # all_dates의 -1 인덱스가 최근 날짜이다
-                self.redis.set_key('UPDATE_{}'.format(model), 'True')
+                self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
             else:
-                self.redis.set_key('UPDATE_{}'.format(model), 'False')
+                self.redis.set_key('UPDATE_{}'.format(model.upper()), 'False')
 
             if model == 'Ticker' or model == 'StockInfo':
                 redis_data = ['to_update_{}_list'.format(model.lower())] + [dates[-1]]
@@ -125,8 +128,8 @@ class Reducers:
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
         today_date = datetime.datetime.now().strftime('%Y%m%d')
-        to_update_ticker_date = self.redis.get_key('to_update_ticker_list')[0]
-        if today_date == to_update_ticker_date:
+        to_update_date = self.redis.get_key('to_update_ticker_list')[0]
+        if today_date == to_update_date:
             bulk_tickers_list = []
             for ticker_info in all_tickers:
                 ticker = ticker_info.split('|')[0]
@@ -137,6 +140,7 @@ class Reducers:
                                      market_type='KOSPI',
                                      state=1)
                 bulk_tickers_list.append(ticker_inst)
+            Ticker.objects.bulk_create(bulk_tickers_list)
             print('코드 업데이트: {}개'.format(len(all_tickers)))
         else:
             print('코드 업데이트: 0개')
@@ -146,8 +150,8 @@ class Reducers:
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
         today_date = datetime.datetime.now().strftime('%Y%m%d')
-        to_update_ticker_date = self.redis.get_key('to_update_ticker_list')[0]
-        if today_date == to_update_ticker_date:
+        to_update_date = self.redis.get_key('to_update_ticker_list')[0]
+        if today_date == to_update_date:
             bulk_tickers_list = []
             for ticker_info in all_tickers:
                 ticker = ticker_info.split('|')[0]
@@ -158,6 +162,40 @@ class Reducers:
                                      market_type='KOSDAQ',
                                      state=1)
                 bulk_tickers_list.append(ticker_inst)
+            Ticker.objects.bulk_create(bulk_tickers_list)
             print('코드 업데이트: {}개'.format(len(all_tickers)))
         else:
             print('코드 업데이트: 0개')
+
+    def save_stock_info(self):
+        stock_info = self.redis.get_list('stock_info')
+        print('FnGuide 데이터: {}'.format(len(stock_info)))
+
+        today_date = datetime.datetime.now().strftime('%Y%m%d')
+        to_update_date = self.redis.get_key('to_update_stockinfo_list')[0]
+        if today_date == to_update_date:
+            bulk_stockinfo_list = []
+            for info in stock_info:
+                date = info.split('|')[0]
+                code = info.split('|')[1]
+                name = info.split('|')[2]
+                stk_kind = info.split('|')[3]
+                mkt_gb = info.split('|')[4]
+                mkt_cap = info.split('|')[5]
+                mkt_cap_size = info.split('|')[6]
+                frg_hld = info.split('|')[7]
+                mgt_gb = info.split('|')[8]
+                stockinfo_inst = StockInfo(date=date,
+                                           code=code,
+                                           name=name,
+                                           stk_kind=stk_kind,
+                                           mkt_gb=mkt_gb,
+                                           mkt_cap=mkt_cap,
+                                           mkt_cap_size=mkt_cap_size,
+                                           frg_hld=frg_hld,
+                                           mgt_gb=mgt_gb)
+                bulk_stockinfo_list.append(stockinfo_inst)
+            StockInfo.objects.bulk_create(bulk_stockinfo_list)
+            print('정보 업데이트: {}개'.format(len(bulk_stockinfo_list)))
+        else:
+            print('정보 업데이트: 0개')
