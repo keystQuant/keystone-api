@@ -115,14 +115,11 @@ class Reducers:
 
             dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
 
-            if all_dates[-1] != dates[-1]:
+            if (all_dates[-1] != dates[-1]) or first_time_saving:
                 # all_dates의 -1 인덱스가 최근 날짜이다
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
             else:
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'False')
-
-            if first_time_saving:
-                self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
 
             if model == 'Ticker' or model == 'StockInfo':
                 redis_data = ['to_update_{}_list'.format(model.lower())] + [dates[-1]]
