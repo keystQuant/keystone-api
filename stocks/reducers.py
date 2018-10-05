@@ -52,6 +52,7 @@ class Reducers:
 
     ##### 공통 태스크 #####
     def save_mass_date(self):
+        print('DATE 데이터 저장:')
         all_dates = self.redis.get_list('mass_date') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_dates)))
 
@@ -75,6 +76,7 @@ class Reducers:
 
     # 날짜 데이터가 있어야하기 때문에 SAVE_MASS_DATE 태스크를 먼저 실행시킨 후에 실행시킨다
     def set_update_tasks(self):
+        print('업데이트할 데이터 지정하기:')
         today_date = datetime.datetime.now().strftime('%Y-%m-%d')
         all_dates = self.redis.get_list('mass_date') # 리스트값이다
 
@@ -124,78 +126,68 @@ class Reducers:
             print(res)
 
     def save_kospi_tickers(self):
+        print('KOSPI 티커 데이터 저장:')
         all_tickers = self.redis.get_list('kospi_tickers') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
         today_date = datetime.datetime.now().strftime('%Y%m%d')
-        to_update_date = self.redis.get_key('to_update_ticker_list')[0]
-        if today_date == to_update_date:
-            bulk_tickers_list = []
-            for ticker_info in all_tickers:
-                ticker = ticker_info.split('|')[0]
-                name = ticker_info.split('|')[1]
-                ticker_inst = Ticker(date=today_date,
-                                     code=ticker,
-                                     name=name,
-                                     market_type='KOSPI',
-                                     state=1)
-                bulk_tickers_list.append(ticker_inst)
-            Ticker.objects.bulk_create(bulk_tickers_list)
-            print('코드 업데이트: {}개'.format(len(all_tickers)))
-        else:
-            print('코드 업데이트: 0개')
+        bulk_tickers_list = []
+        for ticker_info in all_tickers:
+            ticker = ticker_info.split('|')[0]
+            name = ticker_info.split('|')[1]
+            ticker_inst = Ticker(date=today_date,
+                                 code=ticker,
+                                 name=name,
+                                 market_type='KOSPI',
+                                 state=1)
+            bulk_tickers_list.append(ticker_inst)
+        Ticker.objects.bulk_create(bulk_tickers_list)
+        print('코드 업데이트: {}개'.format(len(all_tickers)))
 
     def save_kosdaq_tickers(self):
+        print('KOSDAQ 티커 데이터 저장:')
         all_tickers = self.redis.get_list('kosdaq_tickers') # 리스트값이다
         print('FnGuide 데이터: {}'.format(len(all_tickers)))
 
         today_date = datetime.datetime.now().strftime('%Y%m%d')
-        to_update_date = self.redis.get_key('to_update_ticker_list')[0]
-        if today_date == to_update_date:
-            bulk_tickers_list = []
-            for ticker_info in all_tickers:
-                ticker = ticker_info.split('|')[0]
-                name = ticker_info.split('|')[1]
-                ticker_inst = Ticker(date=today_date,
-                                     code=ticker,
-                                     name=name,
-                                     market_type='KOSDAQ',
-                                     state=1)
-                bulk_tickers_list.append(ticker_inst)
-            Ticker.objects.bulk_create(bulk_tickers_list)
-            print('코드 업데이트: {}개'.format(len(all_tickers)))
-        else:
-            print('코드 업데이트: 0개')
+        bulk_tickers_list = []
+        for ticker_info in all_tickers:
+            ticker = ticker_info.split('|')[0]
+            name = ticker_info.split('|')[1]
+            ticker_inst = Ticker(date=today_date,
+                                 code=ticker,
+                                 name=name,
+                                 market_type='KOSDAQ',
+                                 state=1)
+            bulk_tickers_list.append(ticker_inst)
+        Ticker.objects.bulk_create(bulk_tickers_list)
+        print('코드 업데이트: {}개'.format(len(all_tickers)))
 
     def save_stock_info(self):
+        print('STOCK INFO 데이터 저장:')
         stock_info = self.redis.get_list('stock_info')
         print('FnGuide 데이터: {}'.format(len(stock_info)))
 
-        today_date = datetime.datetime.now().strftime('%Y%m%d')
-        to_update_date = self.redis.get_key('to_update_stockinfo_list')[0]
-        if today_date == to_update_date:
-            bulk_stockinfo_list = []
-            for info in stock_info:
-                date = info.split('|')[0]
-                code = info.split('|')[1]
-                name = info.split('|')[2]
-                stk_kind = info.split('|')[3]
-                mkt_gb = info.split('|')[4]
-                mkt_cap = info.split('|')[5]
-                mkt_cap_size = info.split('|')[6]
-                frg_hld = info.split('|')[7]
-                mgt_gb = info.split('|')[8]
-                stockinfo_inst = StockInfo(date=date,
-                                           code=code,
-                                           name=name,
-                                           stk_kind=stk_kind,
-                                           mkt_gb=mkt_gb,
-                                           mkt_cap=mkt_cap,
-                                           mkt_cap_size=mkt_cap_size,
-                                           frg_hld=frg_hld,
-                                           mgt_gb=mgt_gb)
-                bulk_stockinfo_list.append(stockinfo_inst)
-            StockInfo.objects.bulk_create(bulk_stockinfo_list)
-            print('정보 업데이트: {}개'.format(len(bulk_stockinfo_list)))
-        else:
-            print('정보 업데이트: 0개')
+        bulk_stockinfo_list = []
+        for info in stock_info:
+            date = info.split('|')[0]
+            code = info.split('|')[1]
+            name = info.split('|')[2]
+            stk_kind = info.split('|')[3]
+            mkt_gb = info.split('|')[4]
+            mkt_cap = info.split('|')[5]
+            mkt_cap_size = info.split('|')[6]
+            frg_hld = info.split('|')[7]
+            mgt_gb = info.split('|')[8]
+            stockinfo_inst = StockInfo(date=date,
+                                       code=code,
+                                       name=name,
+                                       stk_kind=stk_kind,
+                                       mkt_gb=mkt_gb,
+                                       mkt_cap=mkt_cap,
+                                       mkt_cap_size=mkt_cap_size,
+                                       frg_hld=frg_hld,
+                                       mgt_gb=mgt_gb)
+            bulk_stockinfo_list.append(stockinfo_inst)
+        StockInfo.objects.bulk_create(bulk_stockinfo_list)
+        print('정보 업데이트: {}개'.format(len(bulk_stockinfo_list)))
