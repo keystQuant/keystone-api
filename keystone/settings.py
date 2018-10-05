@@ -93,12 +93,10 @@ else:
                 'NAME': 'test_keystone', # run "ALTER ROLE arbiter CREATEDB;" in psql
             },
             'OPTIONS': {
-                'sslmode': 'require'
+                'sslmode': 'disable',
             },
         }
     }
-
-    del DATABASES['default']['OPTIONS']['sslmode']
 
 ### 서버 Redis 사용 ###
 if testing == 'True':
