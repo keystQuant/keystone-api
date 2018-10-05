@@ -3,6 +3,7 @@ from django.urls import re_path
 from .views import (
     GatewayView,
 
+    TestDateAPIView,
     DateAPIView,
     TickerAPIView,
     StockInfoAPIView,
@@ -17,6 +18,7 @@ from .views import (
 urlpatterns = [
     re_path(r'^task/$', GatewayView.as_view(), name='gateway'),
 
+    re_path(r'^test-date/$', TestDateAPIView.as_view(), name='test-date'),
     re_path(r'^date/$', DateAPIView.as_view(), name='date'),
     re_path(r'^ticker/$', TickerAPIView.as_view(), name='ticker'),
     re_path(r'^info/$', StockInfoAPIView.as_view(), name='stock-info'),
