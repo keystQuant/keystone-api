@@ -184,7 +184,7 @@ class Reducers:
             mkt_gb = info.split('|')[4]
             mkt_cap = info.split('|')[5]
             mkt_cap_size = info.split('|')[6]
-            frg_hld = info.split('|')[7]
+            frg_hlg = info.split('|')[7]
             mgt_gb = info.split('|')[8]
             stockinfo_inst = StockInfo(date=date,
                                        code=code,
@@ -193,7 +193,7 @@ class Reducers:
                                        mkt_gb=mkt_gb,
                                        mkt_cap=mkt_cap,
                                        mkt_cap_size=mkt_cap_size,
-                                       frg_hld=frg_hld,
+                                       frg_hlg=frg_hlg,
                                        mgt_gb=mgt_gb)
             bulk_stockinfo_list.append(stockinfo_inst)
         StockInfo.objects.bulk_create(bulk_stockinfo_list)
