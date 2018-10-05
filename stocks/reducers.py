@@ -103,13 +103,12 @@ class Reducers:
             model_qs = db_model.objects.order_by('date').distinct('date').values('date')
             dates = pd.DataFrame(list(model_qs))
 
-            update_key_already_set = False
+            first_time_saving = False
 
             if len(dates) == 0:
                 # DB에 데이터가 없다면, 업데이트 시작하기
                 dates = all_dates
-                self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
-                update_key_already_set = True
+                first_time_saving = True
             else:
                 dates = list(dates['date'])
                 dates = list(set(all_dates) - set(dates))
@@ -122,7 +121,7 @@ class Reducers:
             else:
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'False')
 
-            if update_key_already_set:
+            if first_time_saving:
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
 
             if model == 'Ticker' or model == 'StockInfo':
