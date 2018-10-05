@@ -57,7 +57,8 @@ class Reducers:
 
         dates_qs = Date.objects.all().order_by('date').distinct('date').values_list('date')
         dates_in_db = [date[0] for date in dates_qs]
-        print('DB 데이터({}개): {} ~ {}'.format(len(dates_in_db), dates_in_db[0], dates_in_db[-1]))
+        if len(dates_in_db) > 0:
+            print('DB 데이터({}개): {} ~ {}'.format(len(dates_in_db), dates_in_db[0], dates_in_db[-1]))
 
         to_save_dates = list(set(all_dates) - set(dates_in_db))
 
