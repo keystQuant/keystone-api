@@ -34,11 +34,11 @@ class StockInfo(models.Model):
     code = models.CharField(max_length=20)
     name = models.CharField(max_length=50)
     stk_kind = models.CharField(max_length=50) # 산업 구분
-    mkt_gb = models.CharField(max_length=10) # 코스피, 코스닥 시장
+    mkt_gb = models.CharField(max_length=50) # 코스피, 코스닥 시장
     mkt_cap = models.IntegerField() # 시가총액
-    mkt_cap_size = models.CharField(max_length=10) # 대형주, 중형주, 소형주, 제외
+    mkt_cap_size = models.CharField(max_length=50) # 대형주, 중형주, 소형주, 제외
     frg_hlg = models.FloatField() # 외인 지분 (foreign holding)
-    mgt_gb = models.CharField(max_length=20) # 정상, 정지, 관리 등
+    mgt_gb = models.CharField(max_length=50) # 정상, 정지, 관리 등
 
     def __str__(self):
         return '{} {}'.format(self.date, self.name)
