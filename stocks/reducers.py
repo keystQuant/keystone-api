@@ -223,7 +223,7 @@ class Reducers:
                                 mgt_gb=mgt_gb)
             bulk_data_list.append(db_inst)
         StockInfo.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('STOCKINFO_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_index(self):
@@ -253,7 +253,7 @@ class Reducers:
                             trd_amt=trd_amt)
             bulk_data_list.append(db_inst)
         Index.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('INDEX_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_etf(self):
@@ -281,7 +281,7 @@ class Reducers:
                           spread=spread)
             bulk_data_list.append(db_inst)
         ETF.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('ETF_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_ohlcv(self):
@@ -315,7 +315,7 @@ class Reducers:
                             shtsale_trd_qty=shtsale_trd_qty)
             bulk_data_list.append(db_inst)
         OHLCV.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('OHLCV_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_marketcapital(self):
@@ -337,7 +337,7 @@ class Reducers:
                                     pref_stk_qty=pref_stk_qty)
             bulk_data_list.append(db_inst)
         MarketCapital.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('MARKETCAPITAL_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_buysell(self):
@@ -391,7 +391,7 @@ class Reducers:
                               etc_inst_n=etc_inst_n)
             bulk_data_list.append(db_inst)
         BuySell.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('BUYSELL_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_factor(self):
@@ -419,5 +419,5 @@ class Reducers:
                              divid_yield=divid_yield)
             bulk_data_list.append(db_inst)
         Factor.objects.bulk_create(bulk_data_list)
-        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('FACTOR_JUST_UPDATED_TO_DB', 'True')
