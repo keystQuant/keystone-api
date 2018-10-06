@@ -114,6 +114,8 @@ class Reducers:
                 dates = list(set(all_dates) - set(dates))
 
             dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
+            print(dates)
+            
             print(all_dates[-1])
             print(dates[-1])
 
