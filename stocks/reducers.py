@@ -556,7 +556,7 @@ class Reducers:
         # 코스피, 코스닥 소속 모든 종목의 코드값을 리스트 형식으로 저장한다
         kospi_tickers_key = 'KOSPI_TICKERS'
         kosdaq_tickers_key = 'KOSDAQ_TICKERS'
-        etf_tickers_key = 'ETC_TICKERS'
+        etf_tickers_key = 'ETF_TICKERS'
 
         key_exists = self.redis.key_exists(kospi_tickers_key)
         if key_exists == False:
