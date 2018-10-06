@@ -413,14 +413,15 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
+            print(data)
             date = data.split('|')[0]
             code = data.split('|')[1]
             name = data.split('|')[2]
             per = float(data.split('|')[3].strip())
-            pbr = float(data.split('|')[3].strip())
-            pcr = float(data.split('|')[3].strip())
-            psr = float(data.split('|')[3].strip())
-            divid_yield = float(data.split('|')[3].strip())
+            pbr = float(data.split('|')[4].strip())
+            pcr = float(data.split('|')[5].strip())
+            psr = float(data.split('|')[6].strip())
+            divid_yield = float(data.split('|')[7].strip())
             db_inst = Factor(date=date,
                              code=code,
                              name=name,
