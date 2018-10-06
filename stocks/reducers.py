@@ -121,7 +121,11 @@ class Reducers:
                     dates = list(set(all_dates) - set(dates))
                     if len(dates) != 0:
                         dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
-                        db_has_missing_data = True # 최근 데이터가 일치하지만, DB에 빠진 데이터가 있다면 업데이트하기
+                        if model != 'Ticker' or model != 'StockInfo':
+                            # Ticker나 StockInfo는 당일 데이터만 업데이트되도 넘어간다
+                            dates = [all_dates[-1]]
+                        else:
+                            db_has_missing_data = True # 최근 데이터가 일치하지만, DB에 빠진 데이터가 있다면 업데이트하기
                     else:
                         # 이미 모든 데이터가 업데이트되었고, DB에 빠진 데이터도 없다면 최근 데이터만 넣기
                         dates = [all_dates[-1]]
