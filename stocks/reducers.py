@@ -127,8 +127,10 @@ class Reducers:
                         dates = [all_dates[-1]]
 
             if db_not_updated or first_time_saving or db_has_missing_data:
-                self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
+                need_update = 'True'
+                self.redis.set_key('UPDATE_{}'.format(model.upper()), need_update)
             else:
+                need_update = 'False'
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'False')
 
             to_update_list_key = 'to_update_{}_list'.format(model.lower())
@@ -140,7 +142,7 @@ class Reducers:
             if self.redis.key_exists(to_update_list_key):
                 self.redis.del_key(to_update_list_key)
             res = self.redis.set_list(redis_data)
-            print(res)
+            print('업데이트할 필요있다: {}, 날짜: {}개'.format(need_update, res))
 
     def save_kospi_tickers(self):
         print('KOSPI 티커 데이터 저장:')
