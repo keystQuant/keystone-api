@@ -103,6 +103,7 @@ class Reducers:
             model_qs = db_model.objects.order_by('date').distinct('date').values('date')
             dates = pd.DataFrame(list(model_qs))
 
+            db_not_updated = False
             first_time_saving = False
 
             if len(dates) == 0:
@@ -111,15 +112,14 @@ class Reducers:
                 first_time_saving = True
             else:
                 dates = list(dates['date'])
+                if all_dates[-1] != dates[-1]:
+                    # DB에 저장된 데이터가 최근 데이터와 다르다
+                    db_not_updated = True
                 dates = list(set(all_dates) - set(dates))
 
             dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
-            print(dates)
-            
-            print(all_dates[-1])
-            print(dates[-1])
 
-            if (all_dates[-1] != dates[-1]) or first_time_saving:
+            if db_not_updated or first_time_saving:
                 # all_dates의 -1 인덱스가 최근 날짜이다
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
             else:
