@@ -416,11 +416,11 @@ class Reducers:
             date = data.split('|')[0]
             code = data.split('|')[1]
             name = data.split('|')[2]
-            per = float(data.split('|')[3].strip().replace(',', ''))
-            pbr = float(data.split('|')[3].strip().replace(',', ''))
-            pcr = float(data.split('|')[3].strip().replace(',', ''))
-            psr = float(data.split('|')[3].strip().replace(',', ''))
-            divid_yield = float(data.split('|')[3].strip().replace(',', ''))
+            per = float(data.split('|')[3].strip())
+            pbr = float(data.split('|')[3].strip())
+            pcr = float(data.split('|')[3].strip())
+            psr = float(data.split('|')[3].strip())
+            divid_yield = float(data.split('|')[3].strip())
             db_inst = Factor(date=date,
                              code=code,
                              name=name,
