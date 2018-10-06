@@ -105,22 +105,24 @@ class Reducers:
 
             db_not_updated = False
             first_time_saving = False
+            db_has_missing_data = False
 
             if len(dates) == 0:
-                # DB에 데이터가 없다면, 업데이트 시작하기
                 dates = all_dates
-                first_time_saving = True
+                first_time_saving = True # DB에 데이터가 없다면, 업데이트 시작하기
             else:
                 dates = list(dates['date'])
                 if all_dates[-1] != dates[-1]:
-                    # DB에 저장된 데이터가 최근 데이터와 다르다
-                    db_not_updated = True
+                    db_not_updated = True # DB에 저장된 데이터가 최근 데이터와 다르다
                 else:
                     dates = list(set(all_dates) - set(dates))
-                    dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
+                    if len(dates) != 0:
+                        dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
+                        db_has_missing_data = True # DB에 빠진 데이터가 있다
+                    else:
+                        dates = [all_dates[-1]]
 
-            if db_not_updated or first_time_saving:
-                # all_dates의 -1 인덱스가 최근 날짜이다
+            if db_not_updated or first_time_saving or db_has_missing_data:
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'True')
             else:
                 self.redis.set_key('UPDATE_{}'.format(model.upper()), 'False')
