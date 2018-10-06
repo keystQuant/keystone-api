@@ -16,7 +16,8 @@ RUN pip3 install --upgrade pip && \
 
 RUN python manage.py makemigrations && \
     python manage.py migrate && \
-    python manage.py collectstatic --noinput
+    python manage.py collectstatic --noinput && \
+    python tools.py clean-tasks
 
 EXPOSE 8000
 
