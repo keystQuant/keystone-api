@@ -417,16 +417,16 @@ class Reducers:
             date = data_list[0]
             code = data_list[1]
             name = data_list[2]
-            print(data_list[3] != '')
-            print(data_list[4] != '')
-            print(data_list[5] != '')
-            print(data_list[6] != '')
-            print(data_list[7] != '')
-            per = float(data_list[3].strip().replace(',', '')) if data_list[3] != '' else ''
-            pbr = float(data_list[4].strip().replace(',', '')) if data_list[4] != '' else ''
-            pcr = float(data_list[5].strip().replace(',', '')) if data_list[5] != '' else ''
-            psr = float(data_list[6].strip().replace(',', '')) if data_list[6] != '' else ''
-            divid_yield = float(data_list[7].strip().replace(',', '')) if data_list[7] != '' else ''
+            per = data_list[3].strip().replace(',', '') if data_list[3] != '' else ''
+            pbr = data_list[4].strip().replace(',', '') if data_list[4] != '' else ''
+            pcr = data_list[5].strip().replace(',', '') if data_list[5] != '' else ''
+            psr = data_list[6].strip().replace(',', '') if data_list[6] != '' else ''
+            divid_yield = data_list[7].strip().replace(',', '') if data_list[7] != '' else ''
+            print(per)
+            print(pbr)
+            print(pcr)
+            print(psr)
+            print(divid_yield)
             db_inst = Factor(date=date,
                              code=code,
                              name=name,
