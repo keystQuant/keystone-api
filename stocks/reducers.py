@@ -615,7 +615,9 @@ class Reducers:
 
     def _get_tickers(self):
         kospi_tickers = self.redis.get_list('KOSPI_TICKERS')
+        kospi_tickers = [ticker.split('|')[0] for ticker in kospi_tickers]
         kosdaq_tickers = self.redis.get_list('KOSDAQ_TICKERS')
+        kosdaq_tickers = [ticker.split('|')[0] for ticker in kosdaq_tickers]
         tickers = kospi_tickers + kosdaq_tickers
         return tickers
 
