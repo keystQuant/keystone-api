@@ -213,6 +213,7 @@ class Reducers:
         cached_data = self.redis.get_list('stock_info')
         print('FnGuide 데이터: {}'.format(len(cached_data)))
 
+        date = ''
         bulk_data_list = []
         for data in cached_data:
             date = data.split('|')[0]
@@ -243,6 +244,7 @@ class Reducers:
         cached_data = self.redis.get_list('mass_index')
         print('FnGuide 데이터: {}'.format(len(cached_data)))
 
+        date = ''
         bulk_data_list = []
         for data in cached_data:
             date = data.split('|')[0]
@@ -273,6 +275,7 @@ class Reducers:
         cached_data = self.redis.get_list('mass_etf')
         print('FnGuide 데이터: {}'.format(len(cached_data)))
 
+        date = ''
         bulk_data_list = []
         for data in cached_data:
             date = data.split('|')[0]
@@ -301,6 +304,7 @@ class Reducers:
         cached_data = self.redis.get_list('mass_ohlcv')
         print('FnGuide 데이터: {}'.format(len(cached_data)))
 
+        date = ''
         bulk_data_list = []
         for data in cached_data:
             date = data.split('|')[0]
@@ -358,6 +362,7 @@ class Reducers:
         cached_data = self.redis.get_list('mass_buysell')
         print('FnGuide 데이터: {}'.format(len(cached_data)))
 
+        date = ''
         bulk_data_list = []
         for data in cached_data:
             date = data.split('|')[0]
@@ -412,6 +417,7 @@ class Reducers:
         cached_data = self.redis.get_list('mass_factor')
         print('FnGuide 데이터: {}'.format(len(cached_data)))
 
+        date = ''
         bulk_data_list = []
         for data in cached_data:
             data_list = data.split('|')
