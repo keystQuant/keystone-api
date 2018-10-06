@@ -154,6 +154,7 @@ class Reducers:
             bulk_tickers_list.append(ticker_inst)
         Ticker.objects.bulk_create(bulk_tickers_list)
         print('코드 업데이트: {}개'.format(len(all_tickers)))
+        self.redis.set_key('KOSPI_TICKERS_JUST_UPDATED_TO_DB', 'True')
 
     def save_kosdaq_tickers(self):
         print('KOSDAQ 티커 데이터 저장:')
@@ -173,35 +174,57 @@ class Reducers:
             bulk_tickers_list.append(ticker_inst)
         Ticker.objects.bulk_create(bulk_tickers_list)
         print('코드 업데이트: {}개'.format(len(all_tickers)))
+        self.redis.set_key('KOSDAQ_TICKERS_JUST_UPDATED_TO_DB', 'True')
+
+    def save_etf_tickers(self):
+        print('ETF 티커 데이터 저장:')
+        all_tickers = self.redis.get_list('etf_tickers') # 리스트값이다
+        print('FnGuide 데이터: {}'.format(len(all_tickers)))
+
+        today_date = datetime.datetime.now().strftime('%Y%m%d')
+        bulk_tickers_list = []
+        for ticker_info in all_tickers:
+            ticker = ticker_info.split('|')[0]
+            name = ticker_info.split('|')[1]
+            ticker_inst = Ticker(date=today_date,
+                                 code=ticker,
+                                 name=name,
+                                 market_type='ETF',
+                                 state=1)
+            bulk_tickers_list.append(ticker_inst)
+        Ticker.objects.bulk_create(bulk_tickers_list)
+        print('코드 업데이트: {}개'.format(len(all_tickers)))
+        self.redis.set_key('ETF_TICKERS_JUST_UPDATED_TO_DB', 'True')
 
     def save_stock_info(self):
         print('STOCK INFO 데이터 저장:')
-        stock_info = self.redis.get_list('stock_info')
-        print('FnGuide 데이터: {}'.format(len(stock_info)))
+        cached_data = self.redis.get_list('stock_info')
+        print('FnGuide 데이터: {}'.format(len(cached_data)))
 
-        bulk_stockinfo_list = []
-        for info in stock_info:
-            date = info.split('|')[0]
-            code = info.split('|')[1]
-            name = info.split('|')[2]
-            stk_kind = info.split('|')[3]
-            mkt_gb = info.split('|')[4]
-            mkt_cap = int(info.split('|')[5].strip().replace(',', ''))
-            mkt_cap_size = info.split('|')[6]
-            frg_hlg = float(info.split('|')[7].strip().replace(',',''))
-            mgt_gb = info.split('|')[8]
-            stockinfo_inst = StockInfo(date=date,
-                                       code=code,
-                                       name=name,
-                                       stk_kind=stk_kind,
-                                       mkt_gb=mkt_gb,
-                                       mkt_cap=mkt_cap,
-                                       mkt_cap_size=mkt_cap_size,
-                                       frg_hlg=frg_hlg,
-                                       mgt_gb=mgt_gb)
-            bulk_stockinfo_list.append(stockinfo_inst)
-        StockInfo.objects.bulk_create(bulk_stockinfo_list)
-        print('정보 업데이트: {}개'.format(len(bulk_stockinfo_list)))
+        bulk_data_list = []
+        for data in cached_data:
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            stk_kind = data.split('|')[3]
+            mkt_gb = data.split('|')[4]
+            mkt_cap = int(data.split('|')[5].strip().replace(',', ''))
+            mkt_cap_size = data.split('|')[6]
+            frg_hlg = float(data.split('|')[7].strip().replace(',',''))
+            mgt_gb = data.split('|')[8]
+            db_inst = StockInfo(date=date,
+                                code=code,
+                                name=name,
+                                stk_kind=stk_kind,
+                                mkt_gb=mkt_gb,
+                                mkt_cap=mkt_cap,
+                                mkt_cap_size=mkt_cap_size,
+                                frg_hlg=frg_hlg,
+                                mgt_gb=mgt_gb)
+            bulk_data_list.append(db_inst)
+        StockInfo.objects.bulk_create(bulk_data_list)
+        print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('STOCKINFO_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_index(self):
         print('INDEX 데이터 저장:')
@@ -210,15 +233,15 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
-            date = index.split('|')[0]
-            code = index.split('|')[1]
-            name = index.split('|')[2]
-            strt_prc = float(index.split('|')[3].strip().replace(',', ''))
-            high_prc = float(index.split('|')[4].strip().replace(',', ''))
-            low_prc = float(index.split('|')[5].strip().replace(',', ''))
-            cls_prc = float(index.split('|')[6].strip().replace(',', ''))
-            trd_qty = float(index.split('|')[7].strip().replace(',', ''))
-            trd_amt = float(index.split('|')[8].strip().replace(',', ''))
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            strt_prc = float(data.split('|')[3].strip().replace(',', ''))
+            high_prc = float(data.split('|')[4].strip().replace(',', ''))
+            low_prc = float(data.split('|')[5].strip().replace(',', ''))
+            cls_prc = float(data.split('|')[6].strip().replace(',', ''))
+            trd_qty = float(data.split('|')[7].strip().replace(',', ''))
+            trd_amt = float(data.split('|')[8].strip().replace(',', ''))
             db_inst = Index(date=date,
                             code=code,
                             name=name,
@@ -231,6 +254,7 @@ class Reducers:
             bulk_data_list.append(db_inst)
         Index.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('INDEX_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_etf(self):
         print('ETF 데이터 저장:')
@@ -239,14 +263,14 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
-            date = index.split('|')[0]
-            code = index.split('|')[1]
-            name = index.split('|')[2]
-            cls_prc = float(index.split('|')[3].strip().replace(',', ''))
-            trd_qty = int(index.split('|')[4].strip().replace(',', ''))
-            trd_amt = int(index.split('|')[5].strip().replace(',', ''))
-            etf_nav = float(index.split('|')[6].strip().replace(',', ''))
-            spread = float(index.split('|')[7].strip().replace(',', ''))
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            cls_prc = float(data.split('|')[3].strip().replace(',', ''))
+            trd_qty = int(data.split('|')[4].strip().replace(',', ''))
+            trd_amt = int(data.split('|')[5].strip().replace(',', ''))
+            etf_nav = float(data.split('|')[6].strip().replace(',', ''))
+            spread = float(data.split('|')[7].strip().replace(',', ''))
             db_inst = ETF(date=date,
                           code=code,
                           name=name,
@@ -258,6 +282,7 @@ class Reducers:
             bulk_data_list.append(db_inst)
         ETF.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('ETF_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_ohlcv(self):
         print('OHLCV 데이터 저장:')
@@ -266,17 +291,17 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
-            date = index.split('|')[0]
-            code = index.split('|')[1]
-            name = index.split('|')[2]
-            strt_prc = int(index.split('|')[3].strip().replace(',', ''))
-            high_prc = int(index.split('|')[4].strip().replace(',', ''))
-            low_prc = int(index.split('|')[5].strip().replace(',', ''))
-            cls_prc = int(index.split('|')[6].strip().replace(',', ''))
-            adj_prc = int(index.split('|')[7].strip().replace(',', ''))
-            trd_qty = float(index.split('|')[8].strip().replace(',', ''))
-            trd_amt = float(index.split('|')[9].strip().replace(',', ''))
-            shtsale_trd_qty = float(index.split('|')[10].strip().replace(',', ''))
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            strt_prc = int(data.split('|')[3].strip().replace(',', ''))
+            high_prc = int(data.split('|')[4].strip().replace(',', ''))
+            low_prc = int(data.split('|')[5].strip().replace(',', ''))
+            cls_prc = int(data.split('|')[6].strip().replace(',', ''))
+            adj_prc = int(data.split('|')[7].strip().replace(',', ''))
+            trd_qty = float(data.split('|')[8].strip().replace(',', ''))
+            trd_amt = float(data.split('|')[9].strip().replace(',', ''))
+            shtsale_trd_qty = float(data.split('|')[10].strip().replace(',', ''))
             db_inst = OHLCV(date=date,
                             code=code,
                             name=name,
@@ -291,6 +316,7 @@ class Reducers:
             bulk_data_list.append(db_inst)
         OHLCV.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('OHLCV_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_marketcapital(self):
         print('MARKET CAPITAL 데이터 저장:')
@@ -299,11 +325,11 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
-            date = index.split('|')[0]
-            code = index.split('|')[1]
-            name = index.split('|')[2]
-            comm_stk_qty = int(index.split('|')[3].strip().replace(',', ''))
-            pref_stk_qty = int(index.split('|')[4].strip().replace(',', ''))
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            comm_stk_qty = int(data.split('|')[3].strip().replace(',', ''))
+            pref_stk_qty = int(data.split('|')[4].strip().replace(',', ''))
             db_inst = MarketCapital(date=date,
                                     code=code,
                                     name=name,
@@ -312,6 +338,7 @@ class Reducers:
             bulk_data_list.append(db_inst)
         MarketCapital.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('MARKETCAPITAL_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_buysell(self):
         print('BUYSELL 데이터 저장:')
@@ -320,27 +347,27 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
-            date = index.split('|')[0]
-            code = index.split('|')[1]
-            name = index.split('|')[2]
-            forgn_b = int(index.split('|')[3].strip().replace(',', ''))
-            forgn_s = int(index.split('|')[4].strip().replace(',', ''))
-            forgn_n = int(index.split('|')[5].strip().replace(',', ''))
-            private_b = int(index.split('|')[6].strip().replace(',', ''))
-            private_s = int(index.split('|')[7].strip().replace(',', ''))
-            private_n = int(index.split('|')[8].strip().replace(',', ''))
-            inst_sum_b = int(index.split('|')[9].strip().replace(',', ''))
-            inst_sum_s = int(index.split('|')[10].strip().replace(',', ''))
-            inst_sum_n = int(index.split('|')[11].strip().replace(',', ''))
-            trust_b = int(index.split('|')[12].strip().replace(',', ''))
-            trust_s = int(index.split('|')[13].strip().replace(',', ''))
-            trust_n = int(index.split('|')[14].strip().replace(',', ''))
-            pension_b = int(index.split('|')[15].strip().replace(',', ''))
-            pension_s = int(index.split('|')[16].strip().replace(',', ''))
-            pension_n = int(index.split('|')[17].strip().replace(',', ''))
-            etc_inst_b = int(index.split('|')[18].strip().replace(',', ''))
-            etc_inst_s = int(index.split('|')[19].strip().replace(',', ''))
-            etc_inst_n = int(index.split('|')[20].strip().replace(',', ''))
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            forgn_b = int(data.split('|')[3].strip().replace(',', ''))
+            forgn_s = int(data.split('|')[4].strip().replace(',', ''))
+            forgn_n = int(data.split('|')[5].strip().replace(',', ''))
+            private_b = int(data.split('|')[6].strip().replace(',', ''))
+            private_s = int(data.split('|')[7].strip().replace(',', ''))
+            private_n = int(data.split('|')[8].strip().replace(',', ''))
+            inst_sum_b = int(data.split('|')[9].strip().replace(',', ''))
+            inst_sum_s = int(data.split('|')[10].strip().replace(',', ''))
+            inst_sum_n = int(data.split('|')[11].strip().replace(',', ''))
+            trust_b = int(data.split('|')[12].strip().replace(',', ''))
+            trust_s = int(data.split('|')[13].strip().replace(',', ''))
+            trust_n = int(data.split('|')[14].strip().replace(',', ''))
+            pension_b = int(data.split('|')[15].strip().replace(',', ''))
+            pension_s = int(data.split('|')[16].strip().replace(',', ''))
+            pension_n = int(data.split('|')[17].strip().replace(',', ''))
+            etc_inst_b = int(data.split('|')[18].strip().replace(',', ''))
+            etc_inst_s = int(data.split('|')[19].strip().replace(',', ''))
+            etc_inst_n = int(data.split('|')[20].strip().replace(',', ''))
             db_inst = BuySell(date=date,
                               code=code,
                               name=name,
@@ -365,6 +392,7 @@ class Reducers:
             bulk_data_list.append(db_inst)
         BuySell.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('BUYSELL_JUST_UPDATED_TO_DB', 'True')
 
     def save_mass_factor(self):
         print('FACTOR 데이터 저장:')
@@ -373,14 +401,14 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
-            date = index.split('|')[0]
-            code = index.split('|')[1]
-            name = index.split('|')[2]
-            per = float(index.split('|')[3].strip().replace(',', ''))
-            pbr = float(index.split('|')[3].strip().replace(',', ''))
-            pcr = float(index.split('|')[3].strip().replace(',', ''))
-            psr = float(index.split('|')[3].strip().replace(',', ''))
-            divid_yield = float(index.split('|')[3].strip().replace(',', ''))
+            date = data.split('|')[0]
+            code = data.split('|')[1]
+            name = data.split('|')[2]
+            per = float(data.split('|')[3].strip().replace(',', ''))
+            pbr = float(data.split('|')[3].strip().replace(',', ''))
+            pcr = float(data.split('|')[3].strip().replace(',', ''))
+            psr = float(data.split('|')[3].strip().replace(',', ''))
+            divid_yield = float(data.split('|')[3].strip().replace(',', ''))
             db_inst = Factor(date=date,
                              code=code,
                              name=name,
@@ -392,3 +420,4 @@ class Reducers:
             bulk_data_list.append(db_inst)
         Factor.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개'.format(len(bulk_data_list)))
+        self.redis.set_key('FACTOR_JUST_UPDATED_TO_DB', 'True')
