@@ -81,7 +81,7 @@ class TickerAPIView(generics.ListAPIView):
 
 class StockInfoAPIView(generics.ListAPIView):
     queryset = StockInfo.objects.all()
-    serializer_class = IndexSerializer
+    serializer_class = StockInfoSerializer
     permission_classes = (permissions.AllowAny,)
     pagination_class = StandardResultPagination
     filter_backends = [SearchFilter, OrderingFilter]
