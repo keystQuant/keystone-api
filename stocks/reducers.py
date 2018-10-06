@@ -114,6 +114,8 @@ class Reducers:
                 dates = list(set(all_dates) - set(dates))
 
             dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
+            print(all_dates[-1])
+            print(dates[-1])
 
             if (all_dates[-1] != dates[-1]) or first_time_saving:
                 # all_dates의 -1 인덱스가 최근 날짜이다
