@@ -417,11 +417,11 @@ class Reducers:
             date = data_list[0]
             code = data_list[1]
             name = data_list[2]
-            print(data_list[3])
-            print(data_list[4])
-            print(data_list[5])
-            print(data_list[6])
-            print(data_list[7])
+            print(data_list[3] != '')
+            print(data_list[4] != '')
+            print(data_list[5] != '')
+            print(data_list[6] != '')
+            print(data_list[7] != '')
             per = float(data_list[3].strip().replace(',', '')) if data_list[3] != '' else ''
             pbr = float(data_list[4].strip().replace(',', '')) if data_list[4] != '' else ''
             pcr = float(data_list[5].strip().replace(',', '')) if data_list[5] != '' else ''
