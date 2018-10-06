@@ -98,6 +98,8 @@ class Reducers:
                 db_model = MarketCapital
             elif model == 'BuySell':
                 db_model = BuySell
+            elif model == 'Factor':
+                db_model = Factor
 
             print('{} 모델 데이터베이스 상태 확인'.format(model))
             model_qs = db_model.objects.order_by('date').distinct('date').values('date')
