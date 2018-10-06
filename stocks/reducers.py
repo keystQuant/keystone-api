@@ -115,9 +115,9 @@ class Reducers:
                 if all_dates[-1] != dates[-1]:
                     # DB에 저장된 데이터가 최근 데이터와 다르다
                     db_not_updated = True
-                dates = list(set(all_dates) - set(dates))
-
-            dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
+                else:
+                    dates = list(set(all_dates) - set(dates))
+                    dates = list(pd.DataFrame(dates).sort_values(by=[0])[0])
 
             if db_not_updated or first_time_saving:
                 # all_dates의 -1 인덱스가 최근 날짜이다
