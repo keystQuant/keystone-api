@@ -562,21 +562,22 @@ class Reducers:
         if key_exists == False:
             print('키값이 존재하지 않습니다.')
         else:
+            # 이미 키값이 존재한다면, 키값들을 지우고 다시 캐싱한다
             self.redis.del_key(kospi_tickers_key)
-            kospi_tickers = self.redis.get_key(kospi_tickers_key.lower())
-            kospi_data = [kospi_tickers_key] + kospi_tickers
-            self.redis.set_list(kospi_data)
-
             self.redis.del_key(kosdaq_tickers_key)
-            kosdaq_tickers = self.redis.get_key(kosdaq_tickers_key.lower())
-            kosdaq_data = [kosdaq_tickers_key] + kosdaq_tickers
-            self.redis.set_list(kosdaq_data)
-
             self.redis.del_key(etf_tickers_key)
-            etf_tickers = self.redis.get_key(etf_tickers_key.lower())
-            etf_data = [etf_tickers_key] + etf_tickers
-            self.redis.set_list(etf_data)
-            print('KOSPI_TICKERS, KOSDAQ_TICKERS, ETF_TICKERS 새팅 완료')
+        kospi_tickers = self.redis.get_key(kospi_tickers_key.lower())
+        kospi_data = [kospi_tickers_key] + kospi_tickers
+        self.redis.set_list(kospi_data)
+
+        kosdaq_tickers = self.redis.get_key(kosdaq_tickers_key.lower())
+        kosdaq_data = [kosdaq_tickers_key] + kosdaq_tickers
+        self.redis.set_list(kosdaq_data)
+        
+        etf_tickers = self.redis.get_key(etf_tickers_key.lower())
+        etf_data = [etf_tickers_key] + etf_tickers
+        self.redis.set_list(etf_data)
+        print('KOSPI_TICKERS, KOSDAQ_TICKERS, ETF_TICKERS 새팅 완료')
 
     def cache_index_data(self):
         print('CACHE INDEX DATA')
