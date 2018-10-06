@@ -337,7 +337,9 @@ class Reducers:
 
         bulk_data_list = []
         for data in cached_data:
+            print(data)
             date = data.split('|')[0]
+            print(date)
             code = data.split('|')[1]
             name = data.split('|')[2]
             comm_stk_qty = int(data.split('|')[3].strip().replace(',', ''))
