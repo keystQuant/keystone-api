@@ -19,6 +19,85 @@ from keystone.settings import RAVEN_CONFIG
 from raven import Client
 client = Client(RAVEN_CONFIG['dsn'])
 
+MARKET_CODES = {
+    # 시장 인덱스
+    '코스피': 'I.001',
+    '코스닥': 'I.201',
+
+    # 사이즈 인덱스
+    '코스피 대형주': 'I.002',
+    '코스피 중형주': 'I.003',
+    '코스피 소형주': 'I.004',
+    '코스닥 대형주': 'I.202',
+    '코스닥 중형주': 'I.203',
+    '코스닥 소형주': 'I.204',
+
+    # 스타일 인덱스
+    '성장주': 'I.431', # KRX 스마트 모멘텀
+    '가치주': 'I.432', # KRX 스마트 밸류
+    '배당주': 'I.192', # KRX 고배당 50
+    '퀄리티주': 'I.433', # KRX 스마트 퀄리티
+    '사회책임경영주': 'I.426', # KRX 사회책임경영
+
+    # 산업 인덱스
+    '코스피 음식료품': 'I.005',
+    '코스피 섬유,의복': 'I.006',
+    '코스피 종이,목재': 'I.007',
+    '코스피 화학': 'I.008',
+    '코스피 의약품': 'I.009',
+    '코스피 비금속광물': 'I.010',
+    '코스피 철강및금속': 'I.011',
+    '코스피 기계': 'I.012',
+    '코스피 전기,전자': 'I.013',
+    '코스피 의료정밀': 'I.014',
+    '코스피 운수장비': 'I.015',
+    '코스피 유통업': 'I.016',
+    '코스피 전기가스업': 'I.017',
+    '코스피 건설업': 'I.018',
+    '코스피 운수창고': 'I.019',
+    '코스피 통신업': 'I.020',
+    '코스피 금융업': 'I.021',
+    '코스피 은행': 'I.022',
+    '코스피 증권': 'I.024',
+    '코스피 보험': 'I.025',
+    '코스피 서비스업': 'I.026',
+    '코스피 제조업': 'I.027',
+    '코스닥 기타서비스': 'I.212',
+    '코스닥 IT종합': 'I.215',
+    '코스닥 제조': 'I.224',
+    '코스닥 건설': 'I.226',
+    '코스닥 유통': 'I.227',
+    '코스닥 운송': 'I.229',
+    '코스닥 금융': 'I.231',
+    '코스닥 오락, 문화': 'I.237',
+    '코스닥 통신방송서비스': 'I.241',
+    '코스닥 IT S/W & SVC': 'I.242',
+    '코스닥 IT H/W': 'I.243',
+    '코스닥 음식료,담배': 'I.256',
+    '코스닥 섬유,의류': 'I.258',
+    '코스닥 종이,목재': 'I.262',
+    '코스닥 출판,매체복제': 'I.263',
+    '코스닥 화학': 'I.265',
+    '코스닥 제약': 'I.266',
+    '코스닥 비금속': 'I.267',
+    '코스닥 금속': 'I.268',
+    '코스닥 기계,장비': 'I.270',
+    '코스닥 일반전기,전자': 'I.272',
+    '코스닥 의료,정밀기기': 'I.274',
+    '코스닥 운송장비,부품': 'I.275',
+    '코스닥 기타 제조': 'I.277',
+    '코스닥 통신서비스': 'I.351',
+    '코스닥 방송서비스': 'I.352',
+    '코스닥 인터넷': 'I.353',
+    '코스닥 디지탈컨텐츠': 'I.354',
+    '코스닥 소프트웨어': 'I.355',
+    '코스닥 컴퓨터서비스': 'I.356',
+    '코스닥 통신장비': 'I.357',
+    '코스닥 정보기기': 'I.358',
+    '코스닥 반도체': 'I.359',
+    '코스닥 IT부품': 'I.360'
+}
+
 class Reducers:
 
     def __init__(self, action_type, env_type):
@@ -468,3 +547,167 @@ class Reducers:
         Factor.objects.bulk_create(bulk_data_list)
         print('정보 업데이트: {}개, 날짜: {}'.format(len(bulk_data_list), date))
         self.redis.set_key('FACTOR_JUST_UPDATED_TO_DB', 'True')
+
+    ###################
+    ##### 캐시 작업 #####
+    ###################
+    def cache_tickers(self):
+        print('CACHE TICKERS')
+        # 코스피, 코스닥 소속 모든 종목의 코드값을 리스트 형식으로 저장한다
+        kospi_tickers_key = 'KOSPI_TICKERS'
+        kosdaq_tickers_key = 'KOSDAQ_TICKERS'
+        etf_tickers_key = 'ETC_TICKERS'
+
+        key_exists = self.redis.key_exists(kospi_tickers_key)
+        if key_exists == False:
+            print('키값이 존재하지 않습니다.')
+        else:
+            self.redis.del_key(kospi_tickers_key)
+            kospi_tickers = self.redis.get_key(kospi_tickers_key.lower())
+            kospi_data = [kospi_tickers_key] + kospi_tickers
+            self.redis.set_list(kospi_data)
+
+            self.redis.del_key(kosdaq_tickers_key)
+            kosdaq_tickers = self.redis.get_key(kosdaq_tickers_key.lower())
+            kosdaq_data = [kosdaq_tickers_key] + kosdaq_tickers
+            self.redis.set_list(kosdaq_data)
+
+            self.redis.del_key(etf_tickers_key)
+            etf_tickers = self.redis.get_key(etf_tickers_key.lower())
+            etf_data = [etf_tickers_key] + etf_tickers
+            self.redis.set_list(etf_data)
+            print('KOSPI_TICKERS, KOSDAQ_TICKERS, ETF_TICKERS 새팅 완료')
+
+    def cache_index_data(self):
+        print('CACHE INDEX DATA')
+        # 우선 인덱스 티커값들을 리스트로 캐싱한다
+        index_tickers_key = 'INDEX_TICKERS'
+        index_codes = [index_tickers_key]
+
+        for key, val in MARKET_CODES.items():
+            index_codes.append(val)
+
+        key_exists = self.redis.key_exists(index_tickers_key)
+        if key_exists == False:
+            print('키값이 존재하지 않습니다.')
+        else:
+            self.redis.del_key(index_tickers_key)
+            self.redis.set_list(index_codes)
+
+        for index in index_codes:
+            if index == 'INDEX_TICKERS':
+                continue
+            index_data = Index.objects.filter(code=index).order_by('date')
+            index_data = list(index_data.values('date', 'code', 'name', 'cls_prc', 'trd_qty'))
+            index_df = pd.DataFrame(index_data)
+            key = '{}_INDEX'.format(index)
+            key_exists = self.redis.key_exists(key)
+            if key_exists != False:
+                self.redis.del_key(key)
+                print('{} 이미 있음, 삭제하는 중...'.format(key))
+            response = self.redis.set_df(key, index_df)
+            if response == True:
+                print('{} 캐싱 성공'.format(key))
+                print('Data count: {}'.format(len(index_data)))
+            else:
+                print('{} 캐싱 FAILED'.format(key))
+
+    def _get_tickers(self):
+        kospi_tickers = self.redis.get_list('KOSPI_TICKERS')
+        kosdaq_tickers = self.redis.get_list('KOSDAQ_TICKERS')
+        tickers = kospi_tickers + kosdaq_tickers
+        return tickers
+
+    def cache_ohlcv_data(self):
+        print('CACHE OHLCV DATA')
+        tickers = self._get_tickers()
+        print('Total ticker count: {}개'.format(len(tickers)))
+        ticker_count = 0
+        for ticker in tickers:
+            ticker_count += 1
+            ohlcv = OHLCV.objects.filter(code=ticker).order_by('date')
+            ohlcv_data = list(ohlcv.values('date', 'code', 'cls_prc', 'adj_prc', 'trd_qty', 'shtsale_trd_qty'))
+            ohlcv_df = pd.DataFrame(ohlcv_data)
+            key = '{}_OHLCV'.format(ticker)
+            key_exists = self.redis.key_exists(key)
+            if key_exists != False:
+                self.redis.del_key(key)
+                print('{} 이미 있음, 삭제하는 중...'.format(key))
+            response = self.redis.set_df(key, ohlcv_df)
+            if response == True:
+                print('{} / {} - {} 캐싱 성공'.format(ticker_count, len(tickers), key))
+                print('Data count: {}'.format(len(ohlcv_data)))
+            else:
+                print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+
+    def cache_full_ohlcv_data(self):
+        print('CACHE FULL OHLCV DATA')
+        tickers = self._get_tickers()
+        print('Total ticker count: {}개'.format(len(tickers)))
+        ticker_count = 0
+        for ticker in tickers:
+            ticker_count += 1
+            ohlcv = OHLCV.objects.filter(code=ticker).order_by('date')
+            ohlcv_data = list(ohlcv.values('date',
+                                           'code',
+                                           'strt_prc',
+                                           'high_prc',
+                                           'low_prc',
+                                           'cls_prc',
+                                           'adj_prc',
+                                           'trd_qty',
+                                           'shtsale_trd_qty'))
+            ohlcv_df = pd.DataFrame(ohlcv_data)
+            key = '{}_FULL_OHLCV'.format(ticker)
+            key_exists = self.redis.key_exists(key)
+            if key_exists != False:
+                self.redis.del_key(key)
+                print('{} 이미 있음, 삭제하는 중...'.format(key))
+            response = self.redis.set_df(key, ohlcv_df)
+            if response == True:
+                print('{} / {} - {} 캐싱 성공'.format(ticker_count, len(tickers), key))
+                print('Data count: {}'.format(len(ohlcv_data)))
+            else:
+                print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+
+    def cache_buysell_data(self):
+        print('CACHE BUYSELL DATA')
+        # 모든 종목의 BuySell 모델 데이터를 캐싱한다
+        tickers = self._get_tickers()
+        print('Total ticker count: {}개'.format(len(tickers)))
+        ticker_count = 0
+        for ticker in tickers:
+            ticker_count += 1
+            buysell = BuySell.objects.filter(code=ticker).order_by('date')
+            buysell_data = list(buysell.values('date',
+                                               'code',
+                                               'forgn_b',
+                                               'forgn_s',
+                                               'forgn_n',
+                                               'private_b',
+                                               'private_s',
+                                               'private_n',
+                                               'inst_sum_b',
+                                               'inst_sum_s',
+                                               'inst_sum_n',
+                                               'trust_b',
+                                               'trust_s',
+                                               'trust_n',
+                                               'pension_b',
+                                               'pension_s',
+                                               'pension_n',
+                                               'etc_inst_b',
+                                               'etc_inst_s',
+                                               'etc_inst_n'))
+            buysell_df = pd.DataFrame(buysell_data)
+            key = '{}_BUYSELL'.format(ticker)
+            key_exists = self.redis.key_exists(key)
+            if key_exists != False:
+                self.redis.del_key(key)
+                print('{} 이미 있음, 삭제하는 중...'.format(key))
+            response = self.redis.set_df(key, buysell_df)
+            if response == True:
+                print('{} / {} - {} 캐싱 성공'.format(ticker_count, len(tickers), key))
+                print('Data count: {}'.format(len(buysell_df)))
+            else:
+                print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
