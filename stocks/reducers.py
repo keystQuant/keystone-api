@@ -579,6 +579,24 @@ class Reducers:
         self.redis.set_list(etf_data)
         print('KOSPI_TICKERS, KOSDAQ_TICKERS, ETF_TICKERS 새팅 완료')
 
+    def cache_etf_tickers(self):
+        print('CACHE_FULL_ETF_TICKER')
+        samsung_ohlcv = pd.read_msgpack(self.redis.get_key('005930_OHLCV'))
+        recent_date = int(samsung_ohlcv.tail(1)['date'])
+        etf_full_tickers_key = 'ETF_FULL_TICKERS'
+        etf_full_tickers = ETF.objects.filter(date=20190104).values_list('code').distinct()
+        etf_tickers_list = [et[0] for et in etf_full_tickers]
+        key_exists = self.redis.key_exists(key)
+        if key_exists != False:
+            self.redis.del_key(key)
+            print('{} 이미 있음, 삭제하는 중...'.format(key))
+        response = self.redis.set_list(key, etf_tickers_list)
+        if response == True:
+            print('{} - 총 {} 개 캐싱 성공'.format(len(etf_tickers_list), key))
+            print('Data count: {}'.format(len(ohlcv_data)))
+        else:
+            print('{} - 총 {} 개 캐싱 FAILED'.format(len(etf_tickers_list), key))
+
     def cache_index_data(self):
         print('CACHE INDEX DATA')
         # 우선 인덱스 티커값들을 리스트로 캐싱한다
@@ -714,21 +732,3 @@ class Reducers:
                 print('Data count: {}'.format(len(buysell_df)))
             else:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
-
-    def cache_etf_TICKER(self):
-        print('CACHE_ETF_TICKER')
-        samsung_ohlcv = pd.read_msgpack(self.redis.get('005930_OHLCV'))
-        recent_date = int(samsung_ohlcv.tail(1)['date'])
-        key = 'etf_ticker'
-        etf_tickers = ETF.objects.filter(date=20190104).values_list('code').distinct()
-        etf_tickers_list = [et[0] for et in etf_tickers]
-        key_exists = self.redis.key_exists(key)
-        if key_exists != False:
-            self.redis.del_key(key)
-            print('{} 이미 있음, 삭제하는 중...'.format(key))
-        response = self.redis.set_list(key, etf_tickers_list)
-        if response == True:
-            print('{} - 총 {} 개 캐싱 성공'.format(len(etf_tickers_list), key))
-            print('Data count: {}'.format(len(ohlcv_data)))
-        else:
-            print('{} - 총 {} 개 캐싱 FAILED'.format(len(etf_tickers_list), key))
