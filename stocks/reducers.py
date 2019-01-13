@@ -581,7 +581,7 @@ class Reducers:
 
     def cache_etf_tickers(self):
         print('CACHE_FULL_ETF_TICKER')
-        samsung_ohlcv = pd.read_msgpack(redis.redis_client.get('005930_OHLCV'))
+        samsung_ohlcv = pd.read_msgpack(self.redis.redis_client.get('005930_OHLCV'))
         recent_date = int(samsung_ohlcv.tail(1)['date'])
         etf_full_tickers_key = 'ETF_FULL_TICKERS'
         print(recent_date)
