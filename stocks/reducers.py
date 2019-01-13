@@ -587,10 +587,10 @@ class Reducers:
         print(recent_date)
         etf_full_tickers = ETF.objects.filter(date=recent_date).values_list('code').distinct()
         etf_tickers_list = [et[0] for et in etf_full_tickers]
-        key_exists = self.redis.key_exists(key)
+        key_exists = self.redis.key_exists(etf_full_tickers_key)
         if key_exists != False:
             self.redis.del_key(key)
-            print('{} 이미 있음, 삭제하는 중...'.format(key))
+            print('{} 이미 있음, 삭제하는 중...'.format(etf_full_tickers_key))
         etf_data = [etf_full_tickers_key] + etf_tickers_list
         self.redis.set_list(etf_tickers_list)
         print(len(etf_tickers_list))
