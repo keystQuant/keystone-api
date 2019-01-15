@@ -582,17 +582,17 @@ class Reducers:
     def cache_etf_tickers(self):
         print('CACHE_FULL_ETF_TICKER')
         samsung_ohlcv = pd.read_msgpack(self.redis.redis_client.get('005930_OHLCV'))
-        recent_date = int(samsung_ohlcv.tail(2)['date'].iloc[1])
+        recent_date = int(samsung_ohlcv.tail(1)['date'])
         etf_full_tickers_key = 'ETF_FULL_TICKERS'
         print(recent_date)
         etf_full_tickers = ETF.objects.filter(date=recent_date).values_list('code').distinct()
         etf_tickers_list = [et[0] for et in etf_full_tickers]
         key_exists = self.redis.key_exists(etf_full_tickers_key)
         if key_exists != False:
-            self.redis.del_key(key)
+            self.redis.del_key(etf_full_tickers_key)
             print('{} 이미 있음, 삭제하는 중...'.format(etf_full_tickers_key))
         etf_data = [etf_full_tickers_key] + etf_tickers_list
-        self.redis.set_list(etf_tickers_list)
+        self.redis.redis_client.rpush(etf_full_tickers_key, etf_tickers_list)
         print(len(etf_tickers_list))
         print('ETF_FULL_TICKERS 새팅 완료')
 
