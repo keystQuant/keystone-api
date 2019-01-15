@@ -758,3 +758,26 @@ class Reducers:
                 print('Data count: {}'.format(len(buysell_df)))
             else:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+
+    def cache_mktcap_data(self):
+        print('CACHE MKTCAP DATA')
+        mktcap_key = 'MKTCAP_TICKERS'
+        tickers = self.redis.get_list(mktcap_key)
+        print('Total ticker count: {}개'.format(len(tickers)))
+        ticker_count = 0
+        for ticker in tickers:
+            ticker_count += 1
+            mktcap = MarketCapital.objects.filter(code=ticker).order_by('date')
+            mktcap_data = list(mktcap.values('date', 'code', 'name', 'comm_stk_qty', 'pref_stk_qty'))
+            mktcap_df = pd.DataFrame(mktcap_data)
+            key = '{}_MKTCAP'.format(ticker)
+            key_exists = self.redis.key_exists(key)
+            if key_exists != False:
+                self.redis.del_key(key)
+                print('{} 이미 있음, 삭제하는 중...'.format(key))
+            response = self.redis.set_df(key, mktcap_df)
+            if response == True:
+                print('{} / {} - {} 캐싱 성공'.format(ticker_count, len(tickers), key))
+                print('Data count: {}'.format(len(mktcap_data)))
+            else:
+                print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
