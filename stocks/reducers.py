@@ -592,7 +592,7 @@ class Reducers:
             self.redis.del_key(etf_full_tickers_key)
             print('{} 이미 있음, 삭제하는 중...'.format(etf_full_tickers_key))
         etf_data = [etf_full_tickers_key] + etf_tickers_list
-        self.redis.redis_client.rpush(etf_full_tickers_key, etf_tickers_list)
+        self.redis.redis_client.rpush(etf_full_tickers_key, *etf_tickers_list)
         print(len(etf_tickers_list))
         print('ETF_FULL_TICKERS 새팅 완료')
 
