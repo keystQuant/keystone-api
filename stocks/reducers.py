@@ -584,7 +584,7 @@ class Reducers:
     def cache_etf_tickers(self):
         print('CACHE_FULL_ETF_TICKER')
         etf_full_tickers_key = 'ETF_FULL_TICKERS'
-        print(recent_date)
+        print(self.recent_date)
         etf_full_tickers = ETF.objects.filter(date=self.recent_date).values_list('code').distinct()
         etf_tickers_list = [et[0] for et in etf_full_tickers]
         key_exists = self.redis.key_exists(etf_full_tickers_key)
@@ -598,7 +598,7 @@ class Reducers:
     def cache_mktcap_tickers(self):
         print('CACHE_MKTCAP_TICKER')
         mktcap_key = 'MKTCAP_TICKERS'
-        print(recent_date)
+        print(self.recent_date)
         mktcap_tickers = MarketCapital.objects.filter(date=self.recent_date).values_list('code').distinct()
         mkt_tickers_list = [mkt[0] for mkt in mktcap_tickers]
         key_exists = self.redis.key_exists(mktcap_key)
@@ -612,7 +612,7 @@ class Reducers:
     def cache_frg_gte_tickers(self):
         print('CACHE_FRG_GTE_TICKERS',' : ','외국인소진율 3.0% 이상')
         frg_info_key = 'FRG_GTE_TICKERS'
-        print(recent_date)
+        print(self.recent_date)
         frg_tickers = StockInfo.objects.filter(date=self.recent_date).filter(frg_hlg__gte=3.0).values_list('code').distinct()
         frg_tickers_list = [frg[0] for frg in frg_tickers]
         key_exists = self.redis.key_exists(frg_info_key)
