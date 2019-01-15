@@ -109,6 +109,8 @@ class Reducers:
 
         # define cache
         self.redis = RedisClient()
+        samsung_ohlcv = pd.read_msgpack(self.redis.redis_client.get('005930_OHLCV'))
+        self.recent_date = int(samsung_ohlcv.tail(1)['date'])
 
     def has_reducer(self):
         # return True if reducer is defined, else False
@@ -581,20 +583,45 @@ class Reducers:
 
     def cache_etf_tickers(self):
         print('CACHE_FULL_ETF_TICKER')
-        samsung_ohlcv = pd.read_msgpack(self.redis.redis_client.get('005930_OHLCV'))
-        recent_date = int(samsung_ohlcv.tail(1)['date'])
         etf_full_tickers_key = 'ETF_FULL_TICKERS'
         print(recent_date)
-        etf_full_tickers = ETF.objects.filter(date=recent_date).values_list('code').distinct()
+        etf_full_tickers = ETF.objects.filter(date=self.recent_date).values_list('code').distinct()
         etf_tickers_list = [et[0] for et in etf_full_tickers]
         key_exists = self.redis.key_exists(etf_full_tickers_key)
         if key_exists != False:
             self.redis.del_key(etf_full_tickers_key)
             print('{} 이미 있음, 삭제하는 중...'.format(etf_full_tickers_key))
-        etf_data = [etf_full_tickers_key] + etf_tickers_list
         self.redis.redis_client.rpush(etf_full_tickers_key, *etf_tickers_list)
         print(len(etf_tickers_list))
         print('ETF_FULL_TICKERS 새팅 완료')
+
+    def cache_mktcap_tickers(self):
+        print('CACHE_MKTCAP_TICKER')
+        mktcap_key = 'MKTCAP_TICKERS'
+        print(recent_date)
+        mktcap_tickers = MarketCapital.objects.filter(date=self.recent_date).values_list('code').distinct()
+        mkt_tickers_list = [mkt[0] for mkt in mktcap_tickers]
+        key_exists = self.redis.key_exists(mktcap_key)
+        if key_exists != False:
+            self.redis.del_key(mktcap_key)
+            print('{} 이미 있음, 삭제하는 중...'.format(mktcap_key))
+        self.redis.redis_client.rpush(mktcap_key, *mkt_tickers_list)
+        print(len(mkt_tickers_list))
+        print('MKTCAP_TICKERS 새팅 완료')
+
+    def cache_frg_gte_tickers(self):
+        print('CACHE_FRG_GTE_TICKERS',' : ','외국인소진율 3.0% 이상')
+        frg_info_key = 'FRG_GTE_TICKERS'
+        print(recent_date)
+        frg_tickers = StockInfo.objects.filter(date=self.recent_date).filter(frg_hlg__gte=3.0).values_list('code').distinct()
+        frg_tickers_list = [frg[0] for frg in frg_tickers]
+        key_exists = self.redis.key_exists(frg_info_key)
+        if key_exists != False:
+            self.redis.del_key(frg_info_key)
+            print('{} 이미 있음, 삭제하는 중...'.format(frg_info_key))
+        self.redis.redis_client.rpush(frg_info_key, *frg_tickers_list)
+        print(len(frg_tickers_list))
+        print('외국인소진율 3.0% 이상 종목코드 새팅 완료')
 
     def cache_index_data(self):
         print('CACHE INDEX DATA')
