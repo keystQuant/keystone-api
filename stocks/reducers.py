@@ -1,4 +1,4 @@
-import datetime
+import datetime, time
 import pandas as pd
 
 from .models import (
@@ -658,14 +658,16 @@ class Reducers:
                 print('{} 캐싱 FAILED'.format(key))
 
     def _get_tickers(self):
+        etf_tickers = self.redis.get_list('ETF_FULL_TICKERS')
         kospi_tickers = self.redis.get_list('KOSPI_TICKERS')
-        kospi_tickers = [ticker.split('|')[0] for ticker in kospi_tickers]
+        kospi_tickers = [ticker.split('|')[0] for ticker in kospi_tickers if ticker not in etf_tickers]
         kosdaq_tickers = self.redis.get_list('KOSDAQ_TICKERS')
         kosdaq_tickers = [ticker.split('|')[0] for ticker in kosdaq_tickers]
-        tickers = kospi_tickers + kosdaq_tickers
+        tickers = kospi_tickers + kosdaq_tickers + etf_tickers
         return tickers
 
     def cache_ohlcv_data(self):
+        start = time.time()
         print('CACHE OHLCV DATA')
         tickers = self._get_tickers()
         print('Total ticker count: {}개'.format(len(tickers)))
@@ -686,8 +688,11 @@ class Reducers:
                 print('Data count: {}'.format(len(ohlcv_data)))
             else:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+        end = time.time()
+        print("ohlcv end_time:", end-start)
 
     def cache_full_ohlcv_data(self):
+        start = time.time()
         print('CACHE FULL OHLCV DATA')
         tickers = self._get_tickers()
         print('Total ticker count: {}개'.format(len(tickers)))
@@ -716,8 +721,11 @@ class Reducers:
                 print('Data count: {}'.format(len(ohlcv_data)))
             else:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+        end = time.time()
+        print("Full ohlcv end_time:", end-start)
 
     def cache_buysell_data(self):
+        start = time.time()
         print('CACHE BUYSELL DATA')
         # 모든 종목의 BuySell 모델 데이터를 캐싱한다
         tickers = self._get_tickers()
@@ -758,8 +766,11 @@ class Reducers:
                 print('Data count: {}'.format(len(buysell_df)))
             else:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+        end = time.time()
+        print("buysell end_time:", end-start)
 
     def cache_mktcap_data(self):
+        start = time.time()
         print('CACHE MKTCAP DATA')
         mktcap_key = 'MKTCAP_TICKERS'
         tickers = self.redis.get_list(mktcap_key)
@@ -781,3 +792,5 @@ class Reducers:
                 print('Data count: {}'.format(len(mktcap_data)))
             else:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+        end = time.time()
+        print("mktcap end_time:", end-start)
