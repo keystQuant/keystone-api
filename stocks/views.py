@@ -14,6 +14,8 @@ from .models import (
     BuySell,
     MarketCapital,
     Factor,
+    MkfGro,
+    MkfVal,
 )
 from .serializers import (
     DateSerializer,
@@ -25,6 +27,8 @@ from .serializers import (
     BuySellSerializer,
     MarketCapitalSerializer,
     FactorSerializer,
+    MkfGroSerializer,
+    MkfValSerializer,
 )
 from .reducers import Reducers
 
@@ -238,6 +242,56 @@ class FactorAPIView(generics.ListAPIView):
 
     def get_queryset(self, *args, **kwargs):
         queryset = Factor.objects.all().order_by('id')
+        date_by = self.request.GET.get('date')
+        start = self.request.GET.get('start')
+        end = self.request.GET.get('end')
+        code_by = self.request.GET.get('code')
+        name_by = self.request.GET.get('name')
+        if date_by:
+            queryset = queryset.filter(date=date_by)
+        if start and end and not date_by:
+            queryset = queryset.filter(date__gte=start).filter(date__lte=end)
+        if code_by:
+            queryset = queryset.filter(code=code_by)
+        if name_by:
+            queryset = queryset.filter(name=name_by)
+        return queryset
+
+
+class MkfGroAPIView(generics.ListAPIView):
+    queryset = MkfGro.objects.all()
+    serializer_class = MkfGroSerializer
+    permission_classes = (permissions.AllowAny,)
+    pagination_class = StandardResultPagination
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = MkfGro.objects.all().order_by('id')
+        date_by = self.request.GET.get('date')
+        start = self.request.GET.get('start')
+        end = self.request.GET.get('end')
+        code_by = self.request.GET.get('code')
+        name_by = self.request.GET.get('name')
+        if date_by:
+            queryset = queryset.filter(date=date_by)
+        if start and end and not date_by:
+            queryset = queryset.filter(date__gte=start).filter(date__lte=end)
+        if code_by:
+            queryset = queryset.filter(code=code_by)
+        if name_by:
+            queryset = queryset.filter(name=name_by)
+        return queryset
+
+
+class MkfValAPIView(generics.ListAPIView):
+    queryset = MkfVal.objects.all()
+    serializer_class = MkfValSerializer
+    permission_classes = (permissions.AllowAny,)
+    pagination_class = StandardResultPagination
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = MkfVal.objects.all().order_by('id')
         date_by = self.request.GET.get('date')
         start = self.request.GET.get('start')
         end = self.request.GET.get('end')

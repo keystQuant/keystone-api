@@ -146,3 +146,25 @@ class Factor(models.Model):
 
     def __str__(self):
         return '{} {}'.format(self.date, self.name)
+
+
+class MkfGro(models.Model):
+    date = models.CharField(max_length=10)
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
+    type = models.CharField(max_length=10)
+    sector = models.CharField(max_length=30)
+
+    def __str__(self):
+        return '{} {}'.format(self.date, self.name)
+
+
+class MkfVal(models.Model):
+    date = models.CharField(max_length=10)
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=50)
+    type = models.CharField(max_length=10)
+    sector = models.CharField(max_length=30)
+
+    def __str__(self):
+        return '{} {}'.format(self.date, self.name)

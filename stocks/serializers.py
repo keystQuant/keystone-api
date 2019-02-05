@@ -10,6 +10,8 @@ from .models import (
     BuySell,
     MarketCapital,
     Factor,
+    MkfGro,
+    MkfVal,
 )
 
 
@@ -64,4 +66,16 @@ class MarketCapitalSerializer(serializers.ModelSerializer):
 class FactorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Factor
+        fields = '__all__'
+
+
+class MkfGroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MkfGro
+        fields = '__all__'
+
+
+class MkfValSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MkfVal
         fields = '__all__'

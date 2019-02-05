@@ -12,6 +12,8 @@ from .views import (
     BuySellAPIView,
     MarketCapitalAPIView,
     FactorAPIView,
+    MkfGroAPIView,
+    MkfValAPIView,
 )
 
 urlpatterns = [
@@ -26,4 +28,6 @@ urlpatterns = [
     re_path(r'^buysell/$', BuySellAPIView.as_view(), name='buysell'),
     re_path(r'^mktcap/$', MarketCapitalAPIView.as_view(), name='mktcap'),
     re_path(r'^factor/$', FactorAPIView.as_view(), name='factor'),
+    re_path(r'^mkfgro/$', MkfGroAPIView.as_view(), name='mkf-gro'),
+    re_path(r'^mkfval/$', MkfValAPIView.as_view(), name='mkf-val'),
 ]
