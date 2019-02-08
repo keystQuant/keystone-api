@@ -794,3 +794,32 @@ class Reducers:
                 print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
         end = time.time()
         print("mktcap end_time:", end-start)
+
+    def cache_factor_data(self):
+        start = time.time()
+        print('CACHE FATOR DATA')
+        mktcap_key = 'MKTCAP_TICKERS'
+        tickers = self.redis.get_list(mktcap_key)
+        print('Total ticker count: {}개'.format(len(tickers)))
+        ticker_count = 0
+        for ticker in tickers:
+            ticker_count += 1
+            factor_qs = Factor.objects.filter(code=ticker).order_by('date')
+            if len(factor_qs) == 0:
+                print("pass ticker :" , ticker)
+                continue
+            factor_data = list(factor_qs.values('date', 'code', 'name', 'pbr', 'per', 'pcr', 'psr', 'divid_yield'))
+            factor_df = pd.DataFrame(factor_data)
+            key = '{}_FACTOR'.format(ticker)
+            key_exists = self.redis.key_exists(key)
+            if key_exists != False:
+                self.redis.del_key(key)
+                print('{} 이미 있음, 삭제하는 중...'.format(key))
+            response = self.redis.set_df(key, factor_df)
+            if response == True:
+                print('{} / {} - {} 캐싱 성공'.format(ticker_count, len(tickers), key))
+                print('Data count: {}'.format(len(factor_data)))
+            else:
+                print('{} / {} - {} 캐싱 FAILED'.format(ticker_count, len(tickers), key))
+        end = time.time()
+        print("factor cache end_time:", end-start)
