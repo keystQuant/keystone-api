@@ -804,7 +804,7 @@ class Reducers:
         ticker_count = 0
         for ticker in tickers:
             ticker_count += 1
-            factor_qs = Factor.objects.filter(code=ticker).order_by('date')
+            factor_qs = Factor.objects.filter(code=ticker).order_by('date').distinct('date')
             if len(factor_qs) == 0:
                 print("pass ticker :" , ticker)
                 continue
